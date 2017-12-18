@@ -4,6 +4,7 @@ const int red_led = 4 ; // broche 4 du micro-controleur (led rouge)
 void setup() //fonction d'initialisation de la carte
 {
   //contenu de l'initialisation
+  Serial.begin(9600);
   pinMode(green_led, OUTPUT);
   pinMode(red_led, OUTPUT)
 }
