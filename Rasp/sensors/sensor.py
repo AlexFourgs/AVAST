@@ -48,25 +48,3 @@ class Sensor(serial.Serial):
         """
         self.write(b'a')
         return self.readline()[:4]
-
-
-def main():
-
-    arduino = Sensor('/dev/ttyACM0')
-    arduino.flushInput()
-
-    print(arduino.state())
-    print(arduino.ready())
-    print(arduino.state())
-    print(arduino.deactivate())
-    print(arduino.state())
-    print(arduino.alarm())
-
-    while(True):
-        event = arduino.readline()[:4]
-        print(event)
-        arduino.flushInput()
-
-
-if __name__ == '__main__':
-    main()
