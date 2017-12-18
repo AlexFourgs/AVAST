@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -W -Wall -g
+CFLAGS = -W -Wall -g -lpthread
 LDFLAGS = 
  
 SRC = $(wildcard *.c)
@@ -9,7 +9,7 @@ AOUT = prog
 all : $(AOUT) 
  
 prog : $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) -lpthread $(LDFLAGS) -o $@ $^ -lpthread
 %.o : %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 clean :

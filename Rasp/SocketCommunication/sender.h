@@ -6,8 +6,11 @@
 #include <arpa/inet.h>
 #include <unistd.h> /* close */
 #include <netdb.h> /* gethostbyname */
+#include <errno.h> 
+#include <string.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1 
+#define PORT 7777
 
 #define closesocket(s) close(s)
 typedef int SOCKET;
@@ -15,17 +18,6 @@ typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 
-SOCKET init_sock(){
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-	if(sock == INVALID_SOCKET)
-	{
-	    perror("socket()");
-	    exit(errno);
-	}
-
-	return sock
-}
-
-
-#define closesocket(s) close(s)
+SOCKET init_sock();
+void send_datas(char* buffer, SOCKET sock);
 
