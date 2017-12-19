@@ -23,6 +23,9 @@ let http = require('http');
 let clients = [];
 let clientIPs = [];
 
+// Liste des appareils connus et enregistrés
+let knownDevices = [];
+
 /**
  * Helper function for escaping input strings
  */
@@ -31,7 +34,6 @@ function htmlEntities(str) {
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
 
 /**
  * HTTP server
@@ -81,11 +83,31 @@ wsServer.on('request', function (request) {
 
 	});
 
-	connection.on('message', function (message) {
+	connection.on('message', function (evt) {
 
-		console.log((new Date()) + " Peer " + connection.remoteAddress + " sent " + message);
+		// console.log((new Date()) + " Peer " + connection.remoteAddress + " sent " + message);
 
-		connection.send(JSON.stringify(new avastRq.avastRequest()));
-
+		let msg = JSON.parse(evt.utf8Data);
+		console.log(msg);
+		for (dev of msg.devices) {
+		}
+		for (action of msg.actionProvider) {
+			switch (action.actionType) {
+				case "register":
+					register(dev);
+					break;
+				case "listDevices":
+					listDevices();
+					break;
+			}
+		}
 	});
 });
+
+function register(dev) {
+	knownDevices.push(dev);
+}
+
+function listDevices() {
+	// for()
+}
