@@ -28,16 +28,25 @@ void setup()
 
 void loop()
 {
+  // Lecture de l'état du bouton poussoir
   sensor_state = digitalRead(pressure_sensor);
+  
+  
   datax[0] = '\0' ;
   
   if(Serial.available())
   {
+    // Lecture des données provenant de la liaison série
     datax[0]=Serial.read();
     Serial.flush();
   } 
-    if(state == 'r') // ready
+  
+    // Gestion des états et des données 
+    // provenant de la liaison série
+    // (machine à états)
+    if(state == 'r') // Si état pret
     {
+      // Allumage des leds et buzzer off
       digitalWrite(red_led, LOW);
       digitalWrite(green_led, HIGH);
       noTone(buzzer);
