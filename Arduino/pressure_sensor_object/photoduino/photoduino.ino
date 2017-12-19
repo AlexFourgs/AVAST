@@ -1,4 +1,4 @@
-int pressure_sensor ;
+int photo_resistance ;
 int green_led;
 int red_led;
 int buzzer;
@@ -14,13 +14,13 @@ int sensor_measure;
 void setup()
 {
   Serial.begin(9600);
-  pressure_sensor = 10;
+  photo_resistance = A0;
   green_led = 2 ;
   red_led = 4 ;
   buzzer = 9 ;
   pinMode(green_led, OUTPUT);
   pinMode(red_led, OUTPUT);
-  pinMode(pressure_sensor, INPUT);
+  pinMode(photo_resistance, INPUT);
   pinMode(buzzer, OUTPUT);
   
   state = 'r' ; // État armé au départ. (iddle)
@@ -31,8 +31,8 @@ void setup()
 void manage_states() {
 
   /*Propre à chaque sensor*/
-  sensor_measure = digitalRead(pressure_sensor);
-  if (sensor_measure == 0) {
+  sensor_measure = analogRead(photo_resistance);
+  if (sensor_measure < 550) {
     go_alarm = 1;
   } else {
     go_alarm = 0;
@@ -41,16 +41,11 @@ void manage_states() {
   /**/
 
   if(Serial.available()) {
-    // Lecture des données provenant de la liaison série
     datax[0]=Serial.read();
     Serial.flush();
   }
 
-  // Gestion des états et des données 
-  // provenant de la liaison série
-  // (machine à états)
   if(state == 'r') {// ready
-    // Allumage des leds et buzzer off
     digitalWrite(red_led, LOW);
     digitalWrite(green_led, HIGH);
     noTone(buzzer);
