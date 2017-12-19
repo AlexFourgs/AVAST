@@ -5,10 +5,10 @@ char state ;
 
 void setup()
 {
-  
   Serial.begin(9600);
-  state = 'r' ; // État armé au départ. (iddle)
+  state = 'r' ; // État armé au départ. (idle)
   read = 0 ;
+  Serial.println("REDY");
 }
 
 void loop()
@@ -19,46 +19,47 @@ void loop()
   {
     datax[0]=Serial.read();
     Serial.flush();
+
     
-    if(state == 'r')
+    if(state == 'r') //state: Ready
     {
-      if(datax[0] == 'a')
+      if(datax[0] == 'a') //Intentional alarm trigger
       {
         state = 'a' ;
-        Serial.println("Alarm turned on.");
+        Serial.println("ALRM");
       }
-      else if(datax[0] == 'd')
+      else if(datax[0] == 'd') //Intentional deactivation
       {
         state = 'd' ;
-        Serial.println("Sensor deactivated.");
+        Serial.println("DEAC");
       }
-      else if(datax[0] == 'r'){
-        Serial.println("Already iddle.");
+      else if(datax[0] == 'r' || datax[0] == 's'){ //Intentional ready
+        Serial.println("REDY");
       }
-      else 
+      else  //Anything else raises error
       {
-        Serial.println("Error, unknown message");
+        Serial.println("ERR!");
       }
     }
-    else if(state == 'a') // armed
+    else if(state == 'a') // Alarm
     {
-      if(datax[0] == 'r')
+      if(datax[0] == 'r') // Intentional back to Ready
       {
         state = 'r' ;
-        Serial.println("Alarm turned off. Sensor Armed.");
+        Serial.println("REDY");
       }
-      else if(datax[0] == 'd')
+      else if(datax[0] == 'd') // Intentional back to Deatctivated
       {
         state = 'd' ;
-        Serial.println("Alarm turned off. Sensor deactivated.");
+        Serial.println("DEAC");
       }
-      else if(datax[0] == 'a')
+      else if(datax[0] == 'a' || datax[0] == 's') // Alarm still on
       {
-        Serial.println("Alarm already on");
+        Serial.println("ALRM");
       }
       else 
       {
-        Serial.println("Error, unknown message");
+        Serial.println("ERR!");
       }
     }
     else if(state = 'd')
@@ -66,53 +67,21 @@ void loop()
       if(datax[0] == 'r')
       {
         state = 'r' ;
-        Serial.println("Reactivation. Sensor ready.");
+        Serial.println("REDY");
       }
       else if(datax[0] == 'a')
       {
         state = 'a' ;
-        Serial.println("Sensor reactivated. Alarm turned on.");
+        Serial.println("ALRM");
       }
-      else if(datax[0] == 'd')
+      else if(datax[0] == 'd' || datax[0] == 's')
       {
-        Serial.println("Sensor already deactivated.");
+        Serial.println("DEAC");
       }
       else 
       {
-        Serial.println("Error, unknown message");
+        Serial.println("ERR!");
       }
     }        
-        
-    /*if((datax[0] == 'r') && (state != 'r')) // Réarmement
-    {
-      Serial.println("Réarmement");
-      state = datax[0];
-    }
-    else if((datax[0] == 'r') && (state == 'r'))
-    {
-      Serial.println("Déjà réarmé");
-    }  
-    else if((datax[0] == 'u') && (state != 'u')) // Désactivation
-    {
-      Serial.println("Désactivation");
-      state = datax[0];
-    }
-    else if((datax[0] == 'u') && (state == 'u'))
-    {
-     Serial.println("Déjà désactivé"); 
-    }
-    else if((datax[0] == 'a') && (state != 'a')) // Activation de l'alarme
-    {
-      Serial.println("Activation de l'alarme");
-      state = datax[0];
-    }
-    else if((datax[0] == 'a') && (state == 'a'))
-    {
-      Serial.println("Déjà activé");
-    }
-    else // Error, message inconnu. 
-    {
-      Serial.println("Erreur, message inconnu");
-    }*/
   }
 }
