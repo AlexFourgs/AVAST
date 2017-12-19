@@ -18,15 +18,33 @@ ws.onopen = function () {
 };
 
 ws.onmessage = function (evt) {
-    let data = JSON.parse(evt.data);
     console.log("Message received");
-    console.log(data);
+    let msg = JSON.parse(evt.data);
+
+    for (action of msg.actionProvider) {
+        switch (action.actionType) {
+            case "register":
+                register(dev);
+                break;
+            case "listDevices":
+                if(action.actionData == "rq") {
+                    let json = JSON.stringify(listDevices());
+                    ws.send(json);
+                }
+                else if (action.actionData == "ans") {
+                    for(dev of msg.devices) {
+                        addToMenu(dev);
+                    }
+                }
+                break;
+        }
+    }
 };
 
 ws.onclose = function () {
     // websocket is closed.
-    alert("Connection closed");
-    console.log("Connection closed");
+    // alert("Connection closed");
+    // console.log("Connection closed");
 };
 
 ws.sendMessage = function (msg) {
@@ -66,18 +84,21 @@ function s4() {
 }
 
 function openNav() {
-    document.getElementById("mySidenav").style.width = "250px";
+    document.getElementById("devicesNav").style.width = "250px";
 }
 
 function closeNav() {
-    document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("devicesNav").style.width = "0px";
 }
 
 function populateMenu() {
     let avastRq = new AvastRequest();
-    let dev = avastRq.addDevice(guid(), "webclient");
-    avastRq.addAction("register", null);
-    avastRq.addAction("listDevices", null);
-    console.log(ws);
+    avastRq.addDevice(new AvastRequestDevice(guid(), "webclient", "connected"));
+    avastRq.addAction(new AvastRequestAction("register", null));
+    avastRq.addAction(new AvastRequestAction("listDevices", "rq"));
     ws.sendMessage(JSON.stringify(avastRq));
+}
+
+function addToMenu(device) {
+    
 }

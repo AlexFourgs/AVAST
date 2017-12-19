@@ -68,8 +68,13 @@ ws.on('connection', function (ws) {
 					register(dev);
 					break;
 				case "listDevices":
-					let json = JSON.stringify(listDevices());
-					ws.send(json);
+					if(action.actionData == "rq") {
+						let json = JSON.stringify(listDevices());
+						ws.send(json);
+					}
+					else if (action.actionData == "ans") {
+
+					}
 					break;
 			}
 		}
@@ -81,11 +86,12 @@ function register(dev) {
 }
 
 function listDevices() {
-	let deviceList = [];
+	let deviceList = new avastRq.AvastRequest();
 	for (dev of knownDevices) {
 		let device = Object.assign({}, dev);
 		device.eventProvider = [];
-		deviceList.push(device);
+		deviceList.addDevice(device);
 	}
+	deviceList.addAction(new avastRq.AvastRequestAction("listDevices", "ans"))
 	return deviceList;
 }
