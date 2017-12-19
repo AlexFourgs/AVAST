@@ -23,6 +23,7 @@ void setup()
   
   state = 'r' ; // État armé au départ. (iddle)
   read = 0 ;
+  Serial.println("REDY");
 }
 
 void loop()
@@ -34,7 +35,6 @@ void loop()
   {
     datax[0]=Serial.read();
     Serial.flush();
-    Serial.println(datax[0]);
   } 
     if(state == 'r') // ready
     {
@@ -44,25 +44,25 @@ void loop()
       
       if(sensor_state == 0)
       {
-        Serial.println("ALARM ON !");
+        Serial.println("ALRM");
         state = 'a' ;
       }  
       if(datax[0] == 'a')
       {
         state = 'a' ;
-        Serial.println("Alarm turned on.");
+        Serial.println("ALRM");
       }
       else if(datax[0] == 'd')
       {
         state = 'd' ;
-        Serial.println("Sensor deactivated.");
+        Serial.println("DEAC");
       }
       else if(datax[0] == 'r'){
-        Serial.println("Already iddle.");
+        Serial.println("REDY");
       }
       else 
       {
-        //Serial.println("Error, unknown message");
+        //Serial.println("ERR!");
       }
     }
     else if(state == 'a') // alarm
@@ -74,20 +74,20 @@ void loop()
       if(datax[0] == 'r')
       {
         state = 'r' ;
-        Serial.println("Alarm turned off. Sensor Armed.");
+        Serial.println("REDY");
       }
       else if(datax[0] == 'd')
       {
         state = 'd' ;
-        Serial.println("Alarm turned off. Sensor deactivated.");
+        Serial.println("DEAC");
       }
       else if(datax[0] == 'a')
       {
-        Serial.println("Alarm already on");
+        Serial.println("ALRM");
       }
       else 
       {
-        //Serial.println("Error, unknown message");
+        //Serial.println("ERR!");
       }
     }
     else if(state = 'd') // deactivated
@@ -98,20 +98,20 @@ void loop()
       if(datax[0] == 'r')
       {
         state = 'r' ;
-        Serial.println("Reactivation. Sensor ready.");
+        Serial.println("REDY");
       }
       else if(datax[0] == 'a')
       {
         state = 'a' ;
-        Serial.println("Sensor reactivated. Alarm turned on.");
+        Serial.println("ALRM");
       }
       else if(datax[0] == 'd')
       {
-        Serial.println("Sensor already deactivated.");
+        Serial.println("DEAC");
       }
       else 
       {
-        //Serial.println("Error, unknown message");
+        //Serial.println("ERR!");
       }
     }
 }
