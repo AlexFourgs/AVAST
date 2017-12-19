@@ -1,129 +1,127 @@
-int pressure_sensor ;
-int green_led;
-int red_led;
-int buzzer;
-boolean sensor_state ;
+const int green_led = 2;
+const int red_led = 4;
+const int buzzer = 9;
 
-int read;
+/*TO CHANGE FOR EACH SENSOR*/
+const char uid[5] = "Uujj";
+const int sensor_pin = 10;
+/**/
 
-char datax[1];
-char state ;
-int go_alarm;
+char command[1]; //incoming command
+char state; //current state
+int go_alarm; //should we trigger alarm ?
 int sensor_measure;
 
-void setup()
-{
+void setup(){
+
   Serial.begin(9600);
-  pressure_sensor = 10;
-  green_led = 2 ;
-  red_led = 4 ;
-  buzzer = 9 ;
+
   pinMode(green_led, OUTPUT);
   pinMode(red_led, OUTPUT);
-  pinMode(pressure_sensor, INPUT);
+  pinMode(sensor_pin, INPUT);
   pinMode(buzzer, OUTPUT);
   
-  state = 'r' ; // État armé au départ. (iddle)
-  read = 0 ;
+  state = 'r' ; // État armé au départ. (idle)
   Serial.println("REDY");
 }
 
 void manage_states() {
 
-  /*Propre à chaque sensor*/
-  sensor_measure = digitalRead(pressure_sensor);
-  if (sensor_measure == 0) {
-    go_alarm = 1;
-  } else {
-    go_alarm = 0;
+  /*TO CHANGE FOR EACH SENSOR*/
+  sensor_measure = digitalRead(sensor_pin);
+  if(sensor_measure == 1) {
+    go_alarm=1;
   }
-  datax[0] = '\0' ;
   /**/
 
+  command[0] = '\0' ;
+
   if(Serial.available()) {
-    // Lecture des données provenant de la liaison série
-    datax[0]=Serial.read();
+
+    command[0]=Serial.read();
+
+    if(command[0] == 'u') { // We're asked to provide the uid
+      Serial.println(uid);
+    } else if(command[0] == 's') { //We're asked the current state
+      switch(state) {
+          case 'r':
+            Serial.println("REDY");
+            break;
+          case 'a':
+            Serial.println("ALRM");
+            break;
+          case 'd':
+            Serial.println("DEAC");
+            break;
+      }
+    }
+
     Serial.flush();
   }
 
-  // Gestion des états et des données 
-  // provenant de la liaison série
-  // (machine à états)
   if(state == 'r') {// ready
-    // Allumage des leds et buzzer off
+
+
     digitalWrite(red_led, LOW);
     digitalWrite(green_led, HIGH);
     noTone(buzzer);
     
-    if(go_alarm)
-    {
+
+    if(command[0] == 'a' || go_alarm) {
+      state = 'a';
       Serial.println("ALRM");
-      state = 'a' ;
-    }  
-    if(datax[0] == 'a')
-    {
-      state = 'a' ;
-      Serial.println("ALRM");
-    }
-    else if(datax[0] == 'd')
-    {
-      state = 'd' ;
+
+    } else if(command[0] == 'd') {
+      state = 'd';
       Serial.println("DEAC");
-    }
-    else if(datax[0] == 'r'){
+
+    } else if(command[0] == 'r') {
       Serial.println("REDY");
     }
-    else 
-    {
-      //Serial.println("ERR!");
-    }
-    }
-    else if(state == 'a') { // alarm 
+
+
+   } else if(state == 'a') { // alarm 
+
+
       digitalWrite(green_led, LOW);
       digitalWrite(red_led, HIGH);
       tone(buzzer, 700);
       
-      if(datax[0] == 'r')
-      {
-        state = 'r' ;
+      if(command[0] == 'r') {
+        state = 'r';
         Serial.println("REDY");
       }
-      else if(datax[0] == 'd')
+      else if(command[0] == 'd')
       {
         state = 'd' ;
         Serial.println("DEAC");
       }
-      else if(datax[0] == 'a')
+      else if(command[0] == 'a')
       {
         Serial.println("ALRM");
       }
-      else 
-      {
-        //Serial.println("ERR!");
-      }
-    }
-    else if(state = 'd') // deactivated
-    {
+
+
+   } else if(state = 'd') { // deactivated
+    
+
       digitalWrite(red_led, HIGH);
       digitalWrite(green_led, LOW);
       noTone(buzzer);
-      if(datax[0] == 'r')
+
+      if(command[0] == 'r')
       {
         state = 'r' ;
         Serial.println("REDY");
       }
-      else if(datax[0] == 'a')
+      else if(command[0] == 'a')
       {
         state = 'a' ;
         Serial.println("ALRM");
       }
-      else if(datax[0] == 'd')
+      else if(command[0] == 'd')
       {
         Serial.println("DEAC");
-      }
-      else 
-      {
-        //Serial.println("ERR!");
       }
     }
 }

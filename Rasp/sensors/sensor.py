@@ -31,6 +31,7 @@ class Sensor(serial.Serial):
             Send a command to the sensor
         """
         try:
+            self.flushInput()
             self.write(cmd.encode('ASCII'))
         except SerialException as e:
             log.error("Sensor unavailable !")
@@ -64,3 +65,10 @@ class Sensor(serial.Serial):
         """
         log.debug("issued command alarm")
         return self.send_cmd('a')
+
+    def uid(self):
+        """
+            Get the uid of the sensor
+        """
+        log.debug("issued command uid")
+        return self.send_cmd('u')
