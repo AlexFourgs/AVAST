@@ -2,46 +2,27 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <script type="text/javascript">
-        if ("WebSocket" in window) {
-            console.log("WebSocket is supported by your Browser!");
-
-            // Let us open a web socket
-            let ws = new WebSocket("ws://localhost:1337");
-
-            ws.onopen = function () {
-                // Web Socket is connected, send data using send()
-                ws.send("Message to send");
-                console.log("Message sent");
-            };
-
-            ws.onmessage = function (evt) {
-                let data = JSON.parse(evt.data);
-				console.log("Message received");
-				console.log(data);
-            };
-
-            ws.onclose = function () {
-                // websocket is closed.
-                console.log("Connection closed");
-            };
-
-            window.onbeforeunload = function (event) {
-                ws.close();
-            };
-        }
-
-        else {
-            // The browser doesn't support WebSocket
-            alert("WebSocket NOT supported by your Browser!");
-        }
-    </script>
-
+	<title>Client AVAST™</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" href="client.css">
+	<script type="text/javascript" src="avastRequestObject.js"></script>
+	<script type="text/javascript" src="client.js"></script>
 </head>
 
 <body>
+	<div id="mySidenav" class="sidenav">
+		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+		<a href="#">About</a>
+		<a href="#">Services</a>
+		<a href="#">Clients</a>
+		<a href="#">Contact</a>
+	</div>
 
+	<span id="openMenu" onclick="openNav()">&#9776;</span>
+
+	<script>
+		populateMenu();
+	</script>
 </body>
 
 </html>
