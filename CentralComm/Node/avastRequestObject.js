@@ -13,7 +13,7 @@ exports.AvastRequestDeviceVideo = class AvastRequestDeviceVideo {
 	}
 };
 
-exports.AvastRequestDeviceAction = class AvastRequestDeviceAction {
+exports.AvastRequestAction = class AvastRequestAction {
 	constructor(actionType, actionData) {
 		this.actionType = actionType;
 		this.actionData = actionData;
@@ -21,9 +21,10 @@ exports.AvastRequestDeviceAction = class AvastRequestDeviceAction {
 };
 
 exports.AvastRequestDevice = class AvastRequestDevice {
-	constructor(id, type) {
-		this.id = id;// Valeur par défaut  value of properties
+	constructor(id, type, state) {
+		this.id = id;
 		this.type = type;
+		this.state = state;
 		this.log = [];
 		this.eventProvider = [];
 		this.videoProvider = [];
@@ -42,24 +43,18 @@ exports.AvastRequestDevice = class AvastRequestDevice {
 
 exports.AvastRequest = class AvastRequest {
 	constructor() {
-		this.log = [];// Valeur par défaut  value of properties
+		this.log = [];
 		this.devices = [];
 		this.actionProvider = [];
 	}
 
-	addDevice(device) {
-		this.devices.push(device);
-	}
-
-	addDevice(id, type) {
-		let device = new AvastRequestDevice(id, type);
-		this.devices.push(device);
-		return device;
+	addDevice(avastRequestDevice) {
+		this.devices.push(avastRequestDevice);
+		return avastRequestDevice;
 	}
 	
-	addAction(actionType, actionData) {
-		let action = new AvastRequestAction(actionType, actionData);
-		this.actionProvider.push(action);
-		return action;
+	addAction(avastRequestAction) {
+		this.actionProvider.push(avastRequestAction);
+		return avastRequestAction;
 	}
 };
