@@ -1,5 +1,10 @@
 import serial
+from serial.serialutil import SerialException
+import logging
 
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger('sensor')
 
 class Sensor(serial.Serial):
     """
@@ -21,30 +26,41 @@ class Sensor(serial.Serial):
         :params: See pyserial's class Serial.
     """
 
+    def send_cmd(self, cmd):
+        """
+            Send a command to the sensor
+        """
+        try:
+            self.write(cmd.encode('ASCII'))
+        except SerialException as e:
+            log.error("Sensor unavailable !")
+            return None
+        return self.readline()[:4]
+
     def state(self):
         """
             Get the actual state of a sensor.
         """
-        self.write(b's')
-        return self.readline()[:4]
+        log.debug("issued command state")
+        return self.send_cmd('s')
 
     def ready(self):
         """
             Tell to a sensor to go into Ready mode.
         """
-        self.write(b'r')
-        return self.readline()[:4]
+        log.debug("issued command ready")
+        return self.send_cmd('r')
 
     def deactivate(self):
         """
             Deactivate a sensor.
         """
-        self.write(b'd')
-        return self.readline()[:4]
+        log.debug("issued command deactivate")
+        return self.send_cmd('d')
 
     def alarm(self):
         """
             Trigger the alarm of a sensor.
         """
-        self.write(b'a')
-        return self.readline()[:4]
+        log.debug("issued command alarm")
+        return self.send_cmd('a')
