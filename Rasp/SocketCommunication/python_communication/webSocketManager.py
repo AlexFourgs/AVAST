@@ -5,14 +5,14 @@ import sender
 import receiver
 
 class WebSocketManager:
-	def __init__(self, address, port):
+	def __init__(self, address, port, on_message):
 		self.address = address
 		self.port = port
 		ws = create_connection("ws://" + address + ":" + port)
 		
 		# Create Sender and receiver
 		self.snder = sender.Sender(ws)
-		self.recver = receiver.Receiver(ws)
+		self.recver = receiver.Receiver(ws, on_message)
 
 		# Launch both
 		self.recver.start()
@@ -21,10 +21,5 @@ class WebSocketManager:
 	def send(self,message):
 		self.snder.send(message)
 
-	def get_message(self):
-		return recver.get_message()
 
 
-if __name__ == "__main__":
-	webso = WebSocketManager("localhost", "7777")
-	webso.send("tamere manager")
