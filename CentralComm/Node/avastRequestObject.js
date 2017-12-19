@@ -1,7 +1,4 @@
-
-
-
-exports.avastRequestDeviceEvent =   class avastRequestDeviceEvent{
+exports.AvastRequestDeviceEvent =   class AvastRequestDeviceEvent{
   constructor(id , timestamp , state) {
     this.id =  id;
     this.timestamp = timestamp;
@@ -9,21 +6,21 @@ exports.avastRequestDeviceEvent =   class avastRequestDeviceEvent{
   }
 };
 
-exports.avastRequestDeviceVideo =  class avastRequestDeviceVideo  {
-  constructor(videoRessourceType , videoRessouceURI ){
+exports.AvastRequestDeviceVideo =  class AvastRequestDeviceVideo  {
+  constructor(videoRessourceType , videoRessourceURI ){
     this.videoRessourceType =  videoRessourceType;
     this.videoRessouceURI = videoRessourceURI;
   }
 };
 
-exports.avastRequestDeviceAction = class avastRequestDeviceAction {
+exports.AvastRequestDeviceAction = class AvastRequestDeviceAction {
   constructor(actionType , actionData) {
     this.actionType= actionType;
     this.actionData = actionData;
 }
 };
 
-exports.avastRequestDevice =  class avastRequestDevice  {
+exports.AvastRequestDevice = class AvastRequestDevice  {
   constructor(id , type , logs){
     this.id = "";// Valeur par défaut  value of properties
     this.type = "";
@@ -35,28 +32,27 @@ exports.avastRequestDevice =  class avastRequestDevice  {
 
   addAction(actionType , actionData){
     console.log("adding action");
-    this.actionProvider.push(new avastRequestDeviceAction(actionType, actionData));
+    this.actionProvider.push(new AvastRequestDeviceAction(actionType, actionData));
   }
   addVideo( videoRessourceType , videoRessouceURI ){
-    this.videoProvider.push(new avastRequestDeviceVideo(videoRessourceType, videoRessouceURI));
+    this.videoProvider.push(new AvastRequestDeviceVideo(videoRessourceType, videoRessouceURI));
     console.log("adding videoRessource");
   }
   addEvent( id , timestamp , state){
     console.log("adding Event");
-    this.eventProvider.push(new avastRequestDeviceEvent(id , timestamp , state));
+    this.eventProvider.push(new AvastRequestDeviceEvent(id , timestamp , state));
   }
 
 };
 
-
-exports.avastRequest  = class avastRequest {
+exports.AvastRequest = class AvastRequest {
   constructor() {
-    this.log= [];// Valeur par défaut  value of properties
+    this.log = [];// Valeur par défaut  value of properties
     this.devices = [];
   }
 
   addDevice(id , state){
     console.log("adding device " + id);
-    this.devices.push(new avastRequestDeviceEvent( id , Date.now() , state ));
+    this.devices.push(new AvastRequestDeviceEvent( id , Date.now() , state ));
   }
 };
