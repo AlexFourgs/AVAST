@@ -9,12 +9,12 @@
                alert("WebSocket is supported by your Browser!");
 
                // Let us open a web socket
-               var ws = new WebSocket("ws://localhost:1337");
+               var ws = new WebSocket("ws://localhost:8100");
 
                ws.onopen = function()
                {
                   // Web Socket is connected, send data using send()
-                  ws.send("Message to send");
+                  ws.send(JSON.stringify("Message to send"));
                   alert("Message is sent...");
                };
 
