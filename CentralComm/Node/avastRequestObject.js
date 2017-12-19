@@ -10,7 +10,7 @@ exports.avastRequestDeviceEvent =   class avastRequestDeviceEvent{
 };
 
 exports.avastRequestDeviceVideo =  class avastRequestDeviceVideo  {
-  constructor(videoRessourceType , videoRessouceURI ){
+  constructor(videoRessourceType , videoRessourceURI ){
     this.videoRessourceType =  videoRessourceType;
     this.videoRessouceURI = videoRessourceURI;
   }
