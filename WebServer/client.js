@@ -83,7 +83,7 @@ function waitForSocketConnection(socket, callback) {
                 return;
 
             } else {
-                console.log("wait for connection...")
+                // console.log("wait for connection...")
                 waitForSocketConnection(socket, callback);
             }
 
@@ -233,4 +233,21 @@ function rqChangeDevice(id, newState) {
 		deviceList.addDevice(Object.assign({}, dev));
 	}
 	return deviceList;
+}
+
+function btnMoveCam(dir) {
+    switch(dir) {
+        case 'up':
+
+            break;
+        case 'left':
+
+            break;
+        case 'right':
+
+            break;
+        case 'down':
+
+            break;
+    }
 }

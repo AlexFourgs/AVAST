@@ -22,8 +22,27 @@
 		<div id="camContainer">
 			<select id="camSelect" onchange="changeCam()"></select>
 			<div id="videoDiv">
-				<img id="video"></img>
+				<img id="video" src="404.jpg"></img>
 			</div>
+		</div>
+		<div id="moveContainer">
+			<table>
+                <tr>
+                    <td></td>
+                    <td class="move" onclick="btnMoveCam('up')">HAUT</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="move" onclick="btnMoveCam('left')">GAUCHE</td>
+                    <td></td>
+                    <td class="move" onclick="btnMoveCam('right')">DROITE</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="move" onclick="btnMoveCam('down')">BAS</td>
+                    <td></td>
+                </tr>
+            </table>
 		</div>
 	</div>
 

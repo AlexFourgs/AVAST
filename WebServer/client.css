@@ -1,3 +1,7 @@
+body {
+    font-family: "Verdana", "Geneva", "Tahoma", sans-serif;
+}
+
 .sidenav {
     height: 100%;
     width: 0;
@@ -80,6 +84,10 @@
     }
 }
 
+#camSelect {
+    margin-bottom: 10px;
+}
+
 #openMenu {
     position: fixed;
     margin-top: -5px;
@@ -99,4 +107,37 @@
 
 #video {
     width: 500px;
+}
+
+#moveContainer {
+    margin-top: 10px;
+    text-align: center;
+}
+
+#moveContainer table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+#moveContainer table tr {
+    height: 50px;
+}
+
+#moveContainer table td.move {
+    background-color: #BBB;
+}
+
+#moveContainer table td.move:active {
+    background-color: #DDD;
+}
+
+@media only screen and (max-width:600px) {
+    #main {
+        margin: auto;
+        width: 90vw;
+    }
+    
+    #video {
+        width: 90vw;
+    }
 }
