@@ -7,12 +7,14 @@ def main():
 
     arduino = Sensor('/dev/ttyACM1')  # Create a Sensor object
     arduino.flushInput()  # Flushing input to clean it before doing things
+
     print(arduino.state())  # Asking the sensor its current state
-    print(arduino.ready())  # Putting the sensor in Ready state
+    time.sleep(1)
     print(arduino.deactivate())  # Putting the sensor in Deactivate state
+    time.sleep(1)
     print(arduino.alarm())  # Putting the sensor in Alarm state
     time.sleep(3)
-    print(arduino.ready())
+    print(arduino.deactivate())
     while(True):  # Waiting for events
         # This will block until the Sensor sends something
         # [:-4] is used to get rid of '\r\n'
