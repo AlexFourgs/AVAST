@@ -3,7 +3,7 @@ const int red_led = 4;
 const int buzzer = 9;
 
 /*TO CHANGE FOR EACH SENSOR*/
-const char uid[5] = "Uujj";
+const char uid[5] = "Upho";
 const int sensor_pin = A0;
 /**/
 
@@ -22,17 +22,15 @@ void setup(){
   pinMode(buzzer, OUTPUT);
   
   state = 'r' ; // État armé au départ. (idle)
-  Serial.println("REDY");
+  Serial.println("HELO");
 }
 
 void manage_states() {
 
   /*TO CHANGE FOR EACH SENSOR*/
   sensor_measure = analogRead(sensor_pin);
-  if (sensor_measure < 550) {
-    go_alarm = 1;
-  } else {
-    go_alarm = 0;
+  if(sensor_measure < 550) {
+    go_alarm=1;
   }
   /**/
 
