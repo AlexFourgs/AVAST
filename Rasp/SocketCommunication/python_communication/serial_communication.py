@@ -1,6 +1,10 @@
 import threading
 
 class SerialCommunication(threading.Thread):
+	"""
+		Manage the reception of a message from the serial port.
+		read the message and apply the on_message callback
+	"""
 	def __init__(self, device, on_message):
 		threading.Thread.__init__(self)
 		self.stop_event = False
