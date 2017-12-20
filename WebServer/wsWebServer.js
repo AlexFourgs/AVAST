@@ -73,7 +73,6 @@ ws.on('connection', function (ws) {
 						ws.send(json);
 					}
 					else if (action.actionData == "ans") {
-
 					}
 					break;
 			}
