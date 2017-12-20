@@ -38,12 +38,20 @@ ws.onmessage = function (evt) {
                 }
                 else if (action.actionData == "ans") {
                     avastRq = new AvastRequest();
-                    for(dev of msg.devices) {
-                        avastRq.addDevice(dev);
-                        addToMenu(dev);
+                    for(dev in msg.devices) {
+                        avastRq.addDevice(msg.devices[dev]);
+                        addToMenu(msg.devices[dev]);
                         resetMenu();
                     }
                 }
+                break;
+            case "refreshAvast":
+                let deviceList = new AvastRequest();
+                for (dev in msg.devices) {
+                    deviceList.addDevice(Object.assign({}, msg.devices[dev]));
+                }
+                rq = deviceList;
+                resetMenu();
                 break;
         }
     }
@@ -113,7 +121,6 @@ function closeNav() {
 
 function init() {
     populateMenu();
-    client.connect(8000);
 }
 
 function populateMenu() {
@@ -132,7 +139,8 @@ function resetMenu() {
         camSelect.removeChild(camSelect.firstChild);
     }
 
-    for(dev of avastRq.devices) {
+    for(devI in avastRq.devices) {
+        let dev = avastRq.devices[devI];
         let devDiv = document.getElementById(dev.id);
         devicesNav.removeChild(devDiv);
         addToMenu(dev);
@@ -154,10 +162,8 @@ function resetMenu() {
     }
     else {
         document.getElementById("camContainer").style.visibility = "visible";
-        for(dev of avastRq.devices) {
-            if(dev.id == selectedCamId) {
-                client.connect(dev.videoProvider.videoRessouceURI);
-            }
+        if(avastRq.devices[selectedCamId].videoProvider != null) {
+            client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
         }
     }
 }
@@ -165,11 +171,7 @@ function resetMenu() {
 function changeCam() {
     client.close();
     let newCamId = document.getElementById("camSelect").value;
-    for(dev of avastRq.devices) {
-        if(dev.id == newCamId) {
-            client.connect(dev.videoProvider.videoRessouceURI);
-        }
-    }
+    client.connect(avastRq.devices[newCamId].videoProvider.videoRessouceURI);
 }
 
 function addToMenu(device) {
@@ -205,8 +207,6 @@ function btnDEAC(id) {
     avastRq = rqChangeDevice(id, "DEAC");
     let json = JSON.stringify(avastRq);
     ws.send(json);
-
-    resetMenu();
 }
 
 function btnREDY(id) {
@@ -214,8 +214,6 @@ function btnREDY(id) {
     avastRq = rqChangeDevice(id, "REDY");
     let json = JSON.stringify(avastRq);
     ws.send(json);
-
-    resetMenu();
 }
 
 function btnShutdown(id) {
@@ -223,13 +221,12 @@ function btnShutdown(id) {
     avastRq = rqChangeDevice(id, "DEAC");
     let json = JSON.stringify(avastRq);
     ws.send(json);
-
-    resetMenu();
 }
 
 function rqChangeDevice(id, newState) {
 	let deviceList = new AvastRequest();
-	for (dev of avastRq.devices) {
+	for (devI in avastRq.devices) {
+        dev = avastRq.devices[devI];
         if(dev.id == id) {
             dev.state = newState;
         }

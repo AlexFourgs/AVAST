@@ -18,7 +18,6 @@ var ws = new WebSocketServer({ port: webSocketServerPort });
 
 // list of currently connected clients (users)
 let clients = [];
-let clientIPs = [];
 
 /**
  * Helper function for escaping input strings
@@ -43,6 +42,7 @@ function buildFakeDevices() {
 	rq.addDevice(cam2);
 }
 buildFakeDevices();
+let CCIP = "";
 
 ws.on('connection', function (ws) {
 	console.log("Server started on " + webSocketServerPort);
@@ -54,7 +54,6 @@ ws.on('connection', function (ws) {
 
 	// we need to know client index to remove them on 'close' event
 	var index = clients.push(ws) - 1;
-	var indexIP = clientIPs.push(ws._socket.remoteAddress);
 
 
 	console.log((new Date()) + ' Connection accepted.');
@@ -62,36 +61,55 @@ ws.on('connection', function (ws) {
 	// user disconnected
 	ws.on('close', function (connection) {
 
-		console.log((new Date()) + " Peer " + ws._socket.remoteAddress + " disconnected.");
+		// console.log((new Date()) + " Peer " + ws._socket.remoteAddress + " disconnected.");
 
 		// remove user from the list of connected clients
 		clients.splice(index, 1);
-		clientsIPs.splice(indexIP, 1);
 
 	});
 
 	ws.on('message', function (data) {
-		let msg = JSON.parse(data);
-		if(msg.actionProvider.length == 0) {
-			rq = msg;
-		}
-		for (action of msg.actionProvider) {
-			switch (action.actionType) {
-				case "listDevices":
-					if(action.actionData == "rq") {
-						let json = JSON.stringify(listDevices());
-						ws.send(json);
-					}
-					break;
+		
+		try {
+			let msg = JSON.parse(data);
+			
+			if(msg.actionProvider.length == 0) {
+				CCIP.send(data);
 			}
+			for (action of msg.actionProvider) {
+				switch (action.actionType) {
+					case "listDevices":
+						if(action.actionData == "rq") {
+							let json = JSON.stringify(listDevices());
+							ws.send(json);
+						}
+					break;
+					case "registerCC":
+						CCIP = ws;
+						// console.log(CCIP);
+						rq = msg;
+					break;
+					case "refreshAvast":
+						for(c of clients) {
+							if(c._socket != null) {
+								if(c._socket.remoteAddress != ws._socket.remoteAddress) {
+									c.send(data);
+								}
+							}
+						}
+					break;
+				}
+			}
+		} catch(e) {
+			console.error(e);
 		}
 	});
 });
 
 function listDevices() {
 	let deviceList = new avastRq.AvastRequest();
-	for (dev of rq.devices) {
-		deviceList.addDevice(Object.assign({}, dev));
+	for (dev in rq.devices) {
+		deviceList.addDevice(Object.assign({}, rq.devices[dev]));
 	}
 	deviceList.addAction(new avastRq.AvastRequestAction("listDevices", "ans"))
 	return deviceList;
