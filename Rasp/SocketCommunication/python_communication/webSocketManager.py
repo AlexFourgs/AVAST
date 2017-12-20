@@ -5,6 +5,10 @@ import sender
 import receiver
 
 class WebSocketManager:
+	"""
+		Manage the connection with the server.
+		You can send message and receive message by implementing the callback method on_message
+	"""
 	def __init__(self, address, port, on_message):
 		self.address = address
 		self.port = port
@@ -19,6 +23,9 @@ class WebSocketManager:
 
 
 	def send(self,message):
+		"""
+			send message to the server
+		"""
 		self.snder.send(message)
 
 
