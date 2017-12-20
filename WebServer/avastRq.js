@@ -43,15 +43,15 @@ class AvastRequestDevice {
 class AvastRequest {
 	constructor() {
 		this.log = [];
-		this.devices = [];
+		this.devices = {};
 		this.actionProvider = [];
 	}
 
 	addDevice(avastRequestDevice) {
-		this.devices.push(avastRequestDevice);
+		this.devices[avastRequestDevice.id] = avastRequestDevice;
 		return avastRequestDevice;
 	}
-
+	
 	addAction(avastRequestAction) {
 		this.actionProvider.push(avastRequestAction);
 		return avastRequestAction;

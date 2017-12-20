@@ -27,7 +27,7 @@ exports.AvastRequestDevice = class AvastRequestDevice {
 		this.state = state;
 		this.log = [];
 		this.eventProvider = [];
-		this.videoProvider = [];
+		this.videoProvider = null;
 	}
 
 	addVideo(avastRequestDeviceVideo) {
@@ -43,12 +43,12 @@ exports.AvastRequestDevice = class AvastRequestDevice {
 exports.AvastRequest = class AvastRequest {
 	constructor() {
 		this.log = [];
-		this.devices = [];
+		this.devices = {};
 		this.actionProvider = [];
 	}
 
 	addDevice(avastRequestDevice) {
-		this.devices.push(avastRequestDevice);
+		this.devices[avastRequestDevice.id] = avastRequestDevice;
 		return avastRequestDevice;
 	}
 	
