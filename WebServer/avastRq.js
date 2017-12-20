@@ -27,15 +27,14 @@ class AvastRequestDevice {
 		this.state = state;
 		this.log = [];
 		this.eventProvider = [];
-		this.videoProvider = [];
+		this.videoProvider = null;
 	}
 
-	addVideo(videoRessourceType, videoRessouceURI) {
-		this.videoProvider.push(new AvastRequestDeviceVideo(videoRessourceType, videoRessouceURI));
-		console.log("adding videoRessource");
+	addVideo(avastRequestDeviceVideo) {
+		this.videoProvider = avastRequestDeviceVideo;
 	}
+
 	addEvent(id, timestamp, state) {
-		console.log("adding Event");
 		this.eventProvider.push(new AvastRequestDeviceEvent(id, timestamp, state));
 	}
 
@@ -52,7 +51,7 @@ class AvastRequest {
 		this.devices.push(avastRequestDevice);
 		return avastRequestDevice;
 	}
-	
+
 	addAction(avastRequestAction) {
 		this.actionProvider.push(avastRequestAction);
 		return avastRequestAction;

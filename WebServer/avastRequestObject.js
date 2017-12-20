@@ -30,12 +30,11 @@ exports.AvastRequestDevice = class AvastRequestDevice {
 		this.videoProvider = [];
 	}
 
-	addVideo(videoRessourceType, videoRessouceURI) {
-		this.videoProvider.push(new AvastRequestDeviceVideo(videoRessourceType, videoRessouceURI));
-		console.log("adding videoRessource");
+	addVideo(avastRequestDeviceVideo) {
+		this.videoProvider = avastRequestDeviceVideo;
 	}
+
 	addEvent(id, timestamp, state) {
-		console.log("adding Event");
 		this.eventProvider.push(new AvastRequestDeviceEvent(id, timestamp, state));
 	}
 

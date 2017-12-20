@@ -51,15 +51,15 @@
     vertical-align: middle;
 }
 
-.sidenav .state-active {
+.sidenav .state-REDY {
     color: green;
 }
 
-.sidenav .state-alarm {
+.sidenav .state-ALRM {
     color: red;
 }
 
-.sidenav .state-off {
+.sidenav .state-DEAC {
     color: orange;
 }
 
@@ -86,4 +86,17 @@
     margin-left: 5px;
     font-size: 30px;
     cursor: pointer;
+}
+
+#main {
+    margin: auto;
+    width: 500px;
+}
+
+#main h1 {
+    text-align: center;
+}
+
+#video {
+    width: 500px;
 }

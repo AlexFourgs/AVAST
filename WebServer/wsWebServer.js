@@ -20,9 +20,6 @@ var ws = new WebSocketServer({ port: webSocketServerPort });
 let clients = [];
 let clientIPs = [];
 
-// Liste des appareils connus et enregistrés
-let knownDevices = [];
-
 /**
  * Helper function for escaping input strings
  */
@@ -31,6 +28,21 @@ function htmlEntities(str) {
 		.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+let rq;
+function buildFakeDevices() {
+	rq = new avastRq.AvastRequest();
+	rq.addDevice(new avastRq.AvastRequestDevice("photo1", "photo", "REDY"));
+	rq.addDevice(new avastRq.AvastRequestDevice("photo2", "photo", "DEAC"));
+	rq.addDevice(new avastRq.AvastRequestDevice("bouton1", "bouton", "ALRM"));
+	let cam1 = new avastRq.AvastRequestDevice("cam1", "camera", "REDY");
+	cam1.addVideo(new avastRq.AvastRequestDeviceVideo("H264", "ws://localhost:8000/websocket"));
+	rq.addDevice(cam1);
+	let cam2 = new avastRq.AvastRequestDevice("cam2", "camera", "REDY");
+	cam2.addVideo(new avastRq.AvastRequestDeviceVideo("H264", "ws://localhost:8001/websocket"));
+	rq.addDevice(cam2);
+}
+buildFakeDevices();
 
 ws.on('connection', function (ws) {
 	console.log("Server started on " + webSocketServerPort);
@@ -60,19 +72,15 @@ ws.on('connection', function (ws) {
 
 	ws.on('message', function (data) {
 		let msg = JSON.parse(data);
-		for (dev of msg.devices) {
+		if(msg.actionProvider.length == 0) {
+			rq = msg;
 		}
 		for (action of msg.actionProvider) {
 			switch (action.actionType) {
-				case "register":
-					register(dev);
-					break;
 				case "listDevices":
 					if(action.actionData == "rq") {
 						let json = JSON.stringify(listDevices());
 						ws.send(json);
-					}
-					else if (action.actionData == "ans") {
 					}
 					break;
 			}
@@ -80,16 +88,10 @@ ws.on('connection', function (ws) {
 	});
 });
 
-function register(dev) {
-	knownDevices.push(dev);
-}
-
 function listDevices() {
 	let deviceList = new avastRq.AvastRequest();
-	for (dev of knownDevices) {
-		let device = Object.assign({}, dev);
-		device.eventProvider = [];
-		deviceList.addDevice(device);
+	for (dev of rq.devices) {
+		deviceList.addDevice(Object.assign({}, dev));
 	}
 	deviceList.addAction(new avastRq.AvastRequestAction("listDevices", "ans"))
 	return deviceList;
