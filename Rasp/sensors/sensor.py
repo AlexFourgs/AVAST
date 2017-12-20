@@ -26,6 +26,11 @@ class Sensor(serial.Serial):
         :params: See pyserial's class Serial.
     """
 
+    def wait_helo(self):
+        log.info("Waiting for sensor...")
+        self.flushInput()
+        self.readline()[:4]
+
     def send_cmd(self, cmd):
         """
             Send a command to the sensor
@@ -33,10 +38,10 @@ class Sensor(serial.Serial):
         try:
             self.flushInput()
             self.write(cmd.encode('ASCII'))
-        except SerialException as e:
+            return self.readline()[:4]
+        except Exception as e:
             log.error("Sensor unavailable !")
             return None
-        return self.readline()[:4]
 
     def state(self):
         """
