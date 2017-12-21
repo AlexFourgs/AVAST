@@ -3,7 +3,7 @@ const int red_led = 4;
 const int buzzer = 9;
 
 /*TO CHANGE FOR EACH SENSOR*/
-const char uid[5] = "Uujj";
+const char uid[5] = "Ubtn";
 const int sensor_pin = 10;
 /**/
 
