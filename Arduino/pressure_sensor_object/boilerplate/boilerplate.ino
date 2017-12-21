@@ -104,7 +104,7 @@ void manage_states() {
       }
 
 
-   } else if(state = 'd') { // deactivated
+   } else if(state == 'd') { // deactivated
     
 
       digitalWrite(red_led, HIGH);
