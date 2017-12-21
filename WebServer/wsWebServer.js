@@ -109,6 +109,7 @@ ws.on('connection', function (ws) {
 						}
 						else {
 							console.log("No CC, couldn't send move camera");
+							console.log(msg);
 						}
 						break;
 				}
