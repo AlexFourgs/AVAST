@@ -3,7 +3,7 @@ const int red_led = 4;
 const int buzzer = 9;
 
 /*TO CHANGE FOR EACH SENSOR*/
-const char uid[5] = "Uujj";
+const char uid[5] = "Ubtn";
 const int sensor_pin = 10;
 /**/
 
@@ -31,6 +31,9 @@ void manage_states() {
   sensor_measure = digitalRead(sensor_pin);
   if(sensor_measure == 1) {
     go_alarm=1;
+  }
+  else {
+    go_alarm=0;
   }
   /**/
 
@@ -102,7 +105,7 @@ void manage_states() {
       }
 
 
-   } else if(state = 'd') { // deactivated
+   } else if(state == 'd') { // deactivated
     
 
       digitalWrite(red_led, HIGH);
