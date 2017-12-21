@@ -32,6 +32,9 @@ void manage_states() {
   if(sensor_measure == 1) {
     go_alarm=1;
   }
+  else {
+    go_alarm=0;
+  }
   /**/
 
   command[0] = '\0' ;
