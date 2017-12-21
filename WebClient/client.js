@@ -58,6 +58,19 @@ ws.onmessage = function (evt) {
             avastRq = deviceList;
             resetMenu();
             break;
+        case "networkAlert":
+            if(admin) {
+                let path = document.getElementById("connection-"+action.actionData.path);
+                switch(action.actionData.type) {
+                    case "deco":
+                        path.style.color = "red";
+                        break;
+                    case "reco":
+                        path.style.color = "green";
+                        break;
+                }
+            }
+            break;
     }
 };
 

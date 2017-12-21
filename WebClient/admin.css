@@ -9,6 +9,31 @@
     }
 }
 
+#networkView {
+    margin-bottom: 30px;
+}
+
+#networkTable {
+    text-align: center;
+    width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+
+#networkTable th {
+    border: 1px solid black;
+}
+
+#networkEmpty, #networkEmpty td {
+    border: none;
+    height: 20px;
+}
+
+.connection {
+    border: none;
+    color: green;
+}
+
 #logTable {
     width: 100%;
     table-layout: fixed;

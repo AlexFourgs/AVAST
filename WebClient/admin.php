@@ -24,8 +24,35 @@
 	<div id="main">
 		<h1>AVAST™</h1>
 		<div id="networkView">
+            <h3>Réseau</h3>
+            <table id="networkTable">
+                <tr>
+                    <th rowspan="5">Server</th>
+                    <td rowspan="5" class="connection" id="connection-server-cc">&lt;---&gt;</td>
+                    <th rowspan="5">CC</th>
+                    <td rowspan="3" class="connection" id="connection-cc-rasp1">&lt;---&gt;</td>
+                    <th rowspan="3">Raspberry</th>
+                    <td class="connection" id="connection-rasp1-Ubtn">&lt;---&gt;</td>
+                    <th>Bouton</th>
+                </tr>
+                <tr id="networkEmpty">
+                </tr>
+                <tr>
+                    <td class="connection" id="connection-rasp1-Upho">&lt;---&gt;</td>
+                    <th>PhotoR</th>
+                </tr>
+                <tr id="networkEmpty">
+                </tr>
+                <tr>
+                    <td class="connection" id="connection-cc-rasp2">&lt;---&gt;</td>
+                    <th>Raspberry</th>
+                    <td class="connection" id="connection-rasp2-Ucam">&lt;---&gt;</td>
+                    <th>Caméra</th>
+                </tr>
+            </table>
 		</div>
 		<div id="logView">
+            <h3>Logs</h3>
             <table id="logTable">
                 <tr>
                     <th>Timestamp</th><th>Id du capteur</th><th>Contenu</th><th>Stack</th>
