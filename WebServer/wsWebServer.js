@@ -41,7 +41,7 @@ function buildFakeDevices() {
 	cam2.addVideo(new avastRq.AvastRequestDeviceVideo("H264", "ws://localhost:8001/websocket"));
 	rq.addDevice(cam2);
 }
-buildFakeDevices();
+// buildFakeDevices();
 let CCIP = null;
 
 ws.on('connection', function (ws) {
@@ -73,16 +73,29 @@ ws.on('connection', function (ws) {
 		try {
 			let msg = JSON.parse(data);
 
-			if (msg.actionProvider.length == 0) {
-				if (CCIP != null) {
-					CCIP.send(data);
-				}
-				else {
-					console.log("No CC, couldn't send new device state");
+			let action = msg.actionProvider;
+			if(action == null) {
+				console.log(msg);
+				for (c of clients) {
+					if (c._socket != null) {
+						if (c._socket.remoteAddress != ws._socket.remoteAddress) {
+							c.send(data);
+						}
+					}
 				}
 			}
-			for (action of msg.actionProvider) {
+
+			if(action.actionType) {
 				switch (action.actionType) {
+					case "state":
+						if (CCIP != null) {
+							CCIP.send(data);
+						}
+						else {
+							console.log("No CC, couldn't send new device state");
+							console.log(msg);
+						}
+						break;
 					case "listDevices":
 						if (action.actionData == "rq") {
 							let json = JSON.stringify(listDevices());
@@ -91,7 +104,6 @@ ws.on('connection', function (ws) {
 						break;
 					case "registerCC":
 						CCIP = ws;
-						// console.log(CCIP);
 						rq = msg;
 						break;
 					case "refreshAvast":
@@ -125,6 +137,6 @@ function listDevices() {
 	for (dev in rq.devices) {
 		deviceList.addDevice(Object.assign({}, rq.devices[dev]));
 	}
-	deviceList.addAction(new avastRq.AvastRequestAction("listDevices", "ans"))
+	deviceList.setAction(new avastRq.AvastRequestAction("listDevices", "ans"))
 	return deviceList;
 }

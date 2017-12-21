@@ -25,31 +25,29 @@ ws.onmessage = function (evt) {
     let msg = JSON.parse(evt.data);
     console.log(msg);
 
-    for (action of msg.actionProvider) {
-        switch (action.actionType) {
-            case "listDevices":
-                if(action.actionData == "rq") {
-                    let json = JSON.stringify(listDevices());
-                    ws.send(json);
+    let action = msg.actionProvider;
+    switch (action.actionType) {
+        case "listDevices":
+            if(action.actionData == "rq") {
+                let json = JSON.stringify(listDevices());
+                ws.send(json);
+            }
+            else if (action.actionData == "ans") {
+                avastRq = new AvastRequest();
+                for(dev in msg.devices) {
+                    avastRq.addDevice(msg.devices[dev]);
                 }
-                else if (action.actionData == "ans") {
-                    avastRq = new AvastRequest();
-                    for(dev in msg.devices) {
-                        avastRq.addDevice(msg.devices[dev]);
-                        addToMenu(msg.devices[dev]);
-                        resetMenu();
-                    }
-                }
-                break;
-            case "refreshAvast":
-                let deviceList = new AvastRequest();
-                for (dev in msg.devices) {
-                    deviceList.addDevice(Object.assign({}, msg.devices[dev]));
-                }
-                rq = deviceList;
                 resetMenu();
-                break;
-        }
+            }
+            break;
+        case "refreshAvast":
+            let deviceList = new AvastRequest();
+            for (dev in msg.devices) {
+                deviceList.addDevice(Object.assign({}, msg.devices[dev]));
+            }
+            avastRq = deviceList;
+            resetMenu();
+            break;
     }
 };
 
@@ -94,8 +92,8 @@ let states = {
     },
     "ALRM": {
         "fr": "Alarme",
-        "btn": "btnREDY(",
-        "btnFr": "Ré-armer"
+        "btn": "btnDEAC(",
+        "btnFr": "Désarmer"
     },
     "DEAC": {
         "fr": "Désarmé",
@@ -121,7 +119,7 @@ function init() {
 
 function populateMenu() {
     let avastRq = new AvastRequest();
-    avastRq.addAction(new AvastRequestAction("listDevices", "rq"));
+    avastRq.setAction(new AvastRequestAction("listDevices", "rq"));
     ws.sendMessage(JSON.stringify(avastRq));
 }
 
@@ -135,10 +133,22 @@ function resetMenu() {
         camSelect.removeChild(camSelect.firstChild);
     }
 
+    while (devicesNav.firstChild) {
+        devicesNav.removeChild(devicesNav.firstChild);
+    }
+
+    let closeA = document.createElement("a");
+    closeA.href = "javascript:void(0)";
+    closeA.className = "closebtn";
+    closeA.setAttribute("onclick", "closeNav()");
+    closeA.appendChild(document.createTextNode("×"));
+    devicesNav.appendChild(closeA);
+
     for(devI in avastRq.devices) {
+        console.log(devI);
         let dev = avastRq.devices[devI];
-        let devDiv = document.getElementById(dev.id);
-        devicesNav.removeChild(devDiv);
+        // let devDiv = document.getElementById(dev.id);
+        // devicesNav.removeChild(devDiv);
         addToMenu(dev);
         if(dev.type == "camera") {
             let option = document.createElement("option");
@@ -155,14 +165,14 @@ function resetMenu() {
     }
     if(camCounter == 0) {
         document.getElementById("camContainer").style.visibility = "hidden";
-        // document.getElementById("moveContainer").style.visibility = "hidden";
+        document.getElementById("moveContainer").style.visibility = "hidden";
     }
     else {
         document.getElementById("camContainer").style.visibility = "visible";
         if(avastRq.devices[selectedCamId].videoProvider != null) {
             client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
         }
-        // document.getElementById("moveContainer").style.visibility = "visible";
+        document.getElementById("moveContainer").style.visibility = "visible";
     }
 }
 
@@ -204,28 +214,22 @@ function addToMenu(device) {
 
 function btnDEAC(id) {
     console.log("DEAC "+id);
-    avastRq = rqChangeDevice(id, "DEAC");
+    avastRq = rqChangeDeviceState(id, "DEAC");
     let json = JSON.stringify(avastRq);
     ws.send(json);
 }
 
 function btnREDY(id) {
     console.log("REDY "+id);
-    avastRq = rqChangeDevice(id, "REDY");
+    avastRq = rqChangeDeviceState(id, "REDY");
     let json = JSON.stringify(avastRq);
     ws.send(json);
 }
 
-function rqChangeDevice(id, newState) {
+function rqChangeDeviceState(id, newState) {
 	let deviceList = new AvastRequest();
-	for (devI in avastRq.devices) {
-        let devClone = Object.assign({}, avastRq.devices[devI]);
-        // dev = avastRq.devices[devI];
-        if(devClone.id == id) {
-            devClone.state = newState;
-        }
-		deviceList.addDevice(devClone);
-	}
+    deviceList.addDevice(avastRq.devices[id]);
+    deviceList.setAction(new AvastRequestAction("state", newState))
 	return deviceList;
 }
 
@@ -235,7 +239,7 @@ function btnMoveCam(direction) {
     console.log("Move "+direction);
     console.log(avastRq.devices[selectedCamId]);
     deviceList.addDevice(Object.assign({}, avastRq.devices[selectedCamId]));
-    deviceList.addAction(new AvastRequestAction("move", direction));
+    deviceList.setAction(new AvastRequestAction("move", direction));
 
     ws.send(JSON.stringify(deviceList));
 }
