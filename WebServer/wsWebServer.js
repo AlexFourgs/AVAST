@@ -12,6 +12,31 @@ let webSocketServerPort = 1337;
 var WebSocketServer = require("ws").Server;
 var ws = new WebSocketServer({ port: webSocketServerPort });
 
+var videoWs = new WebSocketServer({ port: 1338 });
+videoWs.on('connection', function (videoWs) {
+	console.log((new Date()) + ' Video connection from origin ' + videoWs._socket.remoteAddress + '.');
+
+	// user disconnected
+	videoWs.on('close', function (connection) {
+
+		// remove user from the list of connected clients
+		// clients.splice(index, 1);
+
+	});
+
+	videoWs.on('message', function (data) {
+		console.log(clients.length);
+		for (c of clients) {
+			if (c._socket != null) {
+				if (c._socket.remoteAddress != videoWs._socket.remoteAddress) {
+					c.send(data);
+				}
+			}
+		}
+	});
+});
+
+
 /**
  * Global letiables
  */
@@ -46,7 +71,7 @@ let CCIP = null;
 
 ws.on('connection', function (ws) {
 	console.log("Server started on " + webSocketServerPort);
-	console.log((new Date()) + ' Connection from origin ' + ws._socket.origin + '.');
+	console.log((new Date()) + ' Connection from origin ' + ws._socket.remoteAddress + '.');
 
 	// accept connection - you should check 'request.origin' to
 	// make sure that client is connecting from your website
@@ -97,16 +122,17 @@ ws.on('connection', function (ws) {
 						}
 						break;
 					case "listDevices":
-						if (action.actionData == "rq") {
-							let json = JSON.stringify(listDevices());
-							ws.send(json);
-						}
+						CCIP.send(data);
+						break;
+					case "startStream":
+						CCIP.send(data);
 						break;
 					case "registerCC":
 						CCIP = ws;
 						rq = msg;
 						break;
 					case "refreshAvast":
+
 						for (c of clients) {
 							if (c._socket != null) {
 								if (c._socket.remoteAddress != ws._socket.remoteAddress) {
@@ -117,6 +143,7 @@ ws.on('connection', function (ws) {
 						break;
 					case "move":
 						if (CCIP != null) {
+							console.log("Sending move camera to CC");
 							CCIP.send(data);
 						}
 						else {

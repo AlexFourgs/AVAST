@@ -92,8 +92,8 @@ let states = {
     },
     "ALRM": {
         "fr": "Alarme",
-        "btn": "btnDEAC(",
-        "btnFr": "Désarmer"
+        "btn": "btnREDY(",
+        "btnFr": "Ré-armer"
     },
     "DEAC": {
         "fr": "Désarmé",
@@ -145,7 +145,6 @@ function resetMenu() {
     devicesNav.appendChild(closeA);
 
     for(devI in avastRq.devices) {
-        console.log(devI);
         let dev = avastRq.devices[devI];
         // let devDiv = document.getElementById(dev.id);
         // devicesNav.removeChild(devDiv);
@@ -170,7 +169,12 @@ function resetMenu() {
     else {
         document.getElementById("camContainer").style.visibility = "visible";
         if(avastRq.devices[selectedCamId].videoProvider != null) {
-            client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+            // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+            client.connect("ws://localhost:1338");
+
+            let avastRequest = new AvastRequest();
+            avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
+            ws.send(JSON.stringify(avastRequest));
         }
         document.getElementById("moveContainer").style.visibility = "visible";
     }
@@ -178,10 +182,15 @@ function resetMenu() {
 
 function changeCam() {
     client.close();
+
     let camSelect = document.getElementById("camSelect");
     selectedCamId = camSelect.value;
     selectedCamIndex = camSelect.selectedIndex;
-    client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+    // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+    
+    let avastRequest = new AvastRequest();
+    avastRequest.setAction(new AvastRequestAction("startstream", selectedCamId));
+    ws.send(JSON.stringify(avastRequest));
 }
 
 function addToMenu(device) {
