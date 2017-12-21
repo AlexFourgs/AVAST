@@ -12,48 +12,52 @@ log = logging.getLogger(__name__)
 class Gilberto():
 
     def __init__(self):
-        self.central_address = '192.168.43.166'
-        self.central_port = '8100'
-        self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc)
-        self.sensors = {}
-        self.rmanagers = {}
-        self.authorized_uids = ['Ubtn', 'Upho']
-        log.info("Hello from Gilberto")
+        self.central_address = '192.168.43.166' # Address of the webserver
+        self.central_port = '8100' # Port of the webserver
+        self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc) # Websocket manager creation
+        self.sensors = {} # List sensors
+        self.rmanagers = {} # list serial port managers
+        self.authorized_uids = ['Ubtn', 'Upho'] # list of authorized uid
+        log.info("Hello from Gilberto") 
 
     def on_message_cc(self, message):
-        log.debug('Got request from cc')
-        parsed_json = json.loads(message)
-        log.debug('sending to ' + parsed_json['id'] + ' command ' + parsed_json['stateChgt'])
-        self.send_command(parsed_json['id'], parsed_json['stateChgt'])
+        """
+            Callback : define the behaviour of a message reception
+
+        """
+        log.debug('New request from CC')
+        parsed_json = json.loads(message) # Load message as json
+        self.send_command(parsed_json['id'], parsed_json['stateChgt']) # Send command to 
 
     def discover_sensors(self):
         """
-            Tries to discover any sensor that is connected to Gilberto.
+            Tries to discover any sensor that is connected to Gilberto :
+                 * List all connected ports
+                 * Check if it's a new port
+                 * Add if yes
 
         """
-        devices = serial.tools.list_ports.comports()
 
+        # Browse devices
         for device in serial.tools.list_ports.comports():
-
             if device.device not in self.sensors.keys():
-
+                # Check if the device is an arduino uno
                 if(device.product == 'Arduino Uno'):
                     log.debug('Arduino detected: ' + str(device.device))
+                    # Add as new arduino device
                     cur_device = sensor.Sensor(device.device)
+                    # Waiting for the first message
                     cur_device.wait_helo()
+                    # Waiting for the device uid
                     cur_device.uid = cur_device.uid().decode('utf-8')
-		    
+		    # Create a new device manager
                     if cur_device.uid in self.authorized_uids:
                         log.debug('Recognized sensor')
                         self.sensors[cur_device.port] = cur_device
-                        self.rmanagers[cur_device.port] = RaspManager(self.central_address, self.central_port, cur_device, cur_device.uid, self.on_message_cc)
+                        self.rmanagers[cur_device.port] = RaspManager(self.central_address, self.central_port, cur_device, cur_device.uid, self.websocket)
                         self.rmanagers[cur_device.port].device.state()
                     else:
                         log.warn('Unauthorized sensor connected')
-                        log.warn(cur_device.uid)
-                        log.warn(self.authorized_uids)
-            else:
-                log.debug("port " + device.device + " already in use")
 
     def heartbeat(self):
         """
@@ -83,32 +87,32 @@ class Gilberto():
 
     def send_command(self, uid, command):
         """
-            sends a command to a certain sensor
+            sends a command to a certain sensor with the correct uid
         """
         log.debug('sending ' + command + ' to ' + uid)
         for rmanager in self.rmanagers.values():
             if rmanager.device.uid == uid:
+                # Send a command regarding the name of the state that you wan't to change
+                # Alarm activation
                 if command == "ALRM":
                     rmanager.device.alarm()
 
+                # Arm device
                 elif command == "REDY":
                     rmanager.device.ready()
 
+                # Disarm device 
                 elif command == "DEAC":
                     rmanager.device.deactivate()
 
+                # Ask current state
                 elif command == "STAT":
                     rmanager.device.state()
 
-                return None
+                return True
             
         log.error("uid not foud")
         
-
-
-
-
-
 
 def main():
     g = Gilberto()

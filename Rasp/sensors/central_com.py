@@ -40,17 +40,16 @@ class RaspManager:
 		data["type"] = ""
 		data["state"] = message.decode("UTF-8")
 		self.websocket.send(json.dumps(data))
-		print("\n\ndatas"+ json.dumps(data) + "\n\n")
-	def __init__(self, address, port, device, uid, on_message_cc):
+
+	def __init__(self, address, port, device, uid, websocket):
 		# Declare datas
 		self.central_address = address
 		self.central_port = port
 		self.device = device
 		self.uid = uid
-		self.on_message_cc = on_message_cc
+		self.websocket = websocket
 
 		# Declare serial port listener and server listener
-		self.websocket = webSocketManager.WebSocketManager(self.central_address, self.central_port, self.on_message_cc)
 		self.serial_com = SerialCommunication(device, self.on_message_device)
 		self.serial_com.start()
 
