@@ -76,7 +76,7 @@ void manage_states() {
     } else if(command[0] == 'TURD') { // Tourner en bas
       turn_down();
     }
-   } else if(state = 'd') { // deactivated
+   } else if(state == 'd') { // deactivated
     
 
       digitalWrite(red_led, HIGH);
