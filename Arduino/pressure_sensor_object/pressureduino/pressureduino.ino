@@ -22,7 +22,7 @@ void setup(){
   pinMode(buzzer, OUTPUT);
   
   state = 'r' ; // État armé au départ. (idle)
-  Serial.println("REDY");
+  Serial.println("HELO");
 }
 
 void manage_states() {
