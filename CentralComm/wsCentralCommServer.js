@@ -1,6 +1,12 @@
 
 var avastRq = require("./avastRequestObject.js");
 
+
+var player = require('play-sound')(opts = {})
+
+
+
+
 // Port where we'll run the websocket server
 var localPort = 8100;
 
@@ -10,6 +16,18 @@ var localPort = 8100;
 var webServerIp = "192.168.43.155" // "127.0.0.1" //
 var webServerPort = 1337;
 var isWebServer = false;
+
+
+
+/**
+* Global variables
+*/
+// list of currently connected clients (users)
+// var Avast = new avastRq.AvastRequest()
+
+var clients = [];
+var clientsIPs = [];
+var wsc;
 
 
 var Avast;
@@ -25,15 +43,18 @@ function buildFakeDevices() {
 	Avast.addDevice(cam2);
 }
 buildFakeDevices();
-/**
-* Global variables
-*/
-// list of currently connected clients (users)
-// var Avast = new avastRq.AvastRequest()
 
-var clients = [];
-var clientsIPs = [];
-var wsc;
+function sendToDeviceId(id, data) {
+	if (clientsIPs[id] != null) {
+		if (clientsIPs[id].readyState == clientsIPs[id].OPEN) {
+			clientsIPs[id].send(JSON.stringify(data));
+		} else {
+			console.error("the websocket i associated with this id " + id + "is closed  data : " + JSON.stringify(data));
+		}
+	} else {
+		console.error("no websocket is associated with this id " + id + " data : " + JSON.stringify(data));
+	}
+}
 
 //check if we are the webserver
 console.log("starting centralCom!");
@@ -55,42 +76,35 @@ try {
 			console.log("cannot parse data : " + data)
 		}
 
-		console.log((new Date()) + " Peer "
-			+ wsc._socket.remoteAddress + " have send \"" + ob + "\"");
+		console.log((new Date()) + " web Server    have send \"" + ob + "\"");
 
 
-		console.log(ob);
-		for (var deviceIdx in ob["devices"]) {
-			device = ob["devices"][deviceIdx]
-
-			//if the asked state is different that the one we have in memory
-
-			console.log("device already registered : " + ob["id"] )
-
-			if (Avast["devices"][deviceIdx] != undefined) {
-				if (Avast["devices"][deviceIdx].state != device.state) {
-					Avast["devices"][deviceIdx].eventProvider.push(new avastRq.AvastRequestDeviceEvent(deviceIdx, new Date(), device.state))
-					requestToRasp = {
-						id: deviceIdx,
-						stateChgt: device.state,
+		// if actionType is defined
+		if (ob.actionProvider != null) {
+			action = ob.actionProvider[actionIdx];
+			switch (action.actionType) {
+				case "move":
+					for (var deviceIdx in ob["devices"]) {
+						device = ob["devices"][deviceIdx]
+						requestToRasp = {
+							id: deviceIdx,
+							move: ob.actionProvider
+						}
+						sendToDeviceId(deviceIdx, requestToRasp)
 					}
-					if ( clientsIPs[ob["id"]] != null && clientsIPs[ob["id"]].readyState === clientsIPs[ob["id"]].OPEN) {
-						clientsIPs[deviceIdx].send(JSON.stringify(requestToRasp));
-					} else {
-						console.error("try to connect a disconnected client");
+					break;
+				case "state":
+					for (var deviceIdx in ob["devices"]) {
+						device = ob["devices"][deviceIdx]
+						requestToRasp = {
+							id: deviceIdx,
+							stateChgt: action.actionData
+						}
+						sendToDeviceId(deviceIdx, requestToRasp)
 					}
-
-				}
-			} else {
-				console.error("unknown client");
+					break;
 			}
 		}
-///test a supprimer
-		Avast.addAction(new avastRq.AvastRequestAction("refreshAvast", null))
-		wsc.send(JSON.stringify(Avast))
-		Avast.actionProvider = []
-
-
 
 	});
 } catch (exception) {
@@ -165,9 +179,6 @@ ws.on('connection', function (ws) {
 		}
 		console.log((new Date()) + " Peer "
 			+ ws._socket.remoteAddress + " have send \"" + ob + "\"");
-
-		// if that come from the webserver
-
 
 		// registering the device
 		if (ob["id"] != undefined && ob["type"] != undefined && ob["state"] != undefined) {

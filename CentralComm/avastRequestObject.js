@@ -44,16 +44,16 @@ exports.AvastRequest = class AvastRequest {
 	constructor() {
 		this.log = [];
 		this.devices = {};
-		this.actionProvider = [];
+		this.actionProvider = {};
 	}
 
 	addDevice(avastRequestDevice) {
 		this.devices[avastRequestDevice.id] = avastRequestDevice;
 		return avastRequestDevice;
 	}
-
-	addAction(avastRequestAction) {
-		this.actionProvider.push(avastRequestAction);
+	
+	setAction(avastRequestAction) {
+		this.actionProvider = avastRequestAction;
 		return avastRequestAction;
 	}
 };
