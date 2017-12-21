@@ -27,11 +27,11 @@
             <h3>Réseau</h3>
             <table id="networkTable">
                 <tr>
-                    <th rowspan="5">Server</th>
-                    <td rowspan="5" class="connection" id="connection-server-cc">&lt;---&gt;</td>
-                    <th rowspan="5">CC</th>
+                    <th rowspan="7">Server</th>
+                    <td rowspan="7" class="connection" id="connection-server-cc">&lt;---&gt;</td>
+                    <th rowspan="7">CC</th>
                     <td rowspan="3" class="connection" id="connection-cc-rasp1">&lt;---&gt;</td>
-                    <th rowspan="3">Raspberry</th>
+                    <th rowspan="3">Rasp 1</th>
                     <td class="connection" id="connection-rasp1-Ubtn">&lt;---&gt;</td>
                     <th>Bouton</th>
                 </tr>
@@ -44,10 +44,16 @@
                 <tr id="networkEmpty">
                 </tr>
                 <tr>
-                    <td class="connection" id="connection-cc-rasp2">&lt;---&gt;</td>
-                    <th>Raspberry</th>
+                    <td rowspan="3" class="connection" id="connection-cc-rasp2">&lt;---&gt;</td>
+                    <th rowspan="3">Rasp 2</th>
                     <td class="connection" id="connection-rasp2-Ucam">&lt;---&gt;</td>
                     <th>Caméra</th>
+                </tr>
+                <tr id="networkEmpty">
+                </tr>
+                <tr>
+                    <td class="connection" id="connection-rasp2-Uben">&lt;---&gt;</td>
+                    <th>Bend</th>
                 </tr>
             </table>
 		</div>

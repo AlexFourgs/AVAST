@@ -133,7 +133,7 @@ function changeCam() {
     // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
 
     let avastRequest = new AvastRequest();
-    avastRequest.setAction(new AvastRequestAction("startstream", selectedCamId));
+    avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
     ws.send(JSON.stringify(avastRequest));
 }
 
