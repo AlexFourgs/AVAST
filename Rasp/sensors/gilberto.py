@@ -13,11 +13,12 @@ class Gilberto():
 
     def __init__(self):
         self.central_address = '192.168.43.166' # Address of the webserver
-        self.central_port = '8100' # Port of the webserver
+        #self.central_address = 'localhost' # Address of the webserver
+        self.central_port = '8100' #'8100' # Port of the webserver
         self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc) # Websocket manager creation
         self.sensors = {} # List sensors
         self.rmanagers = {} # list serial port managers
-        self.authorized_uids = ['Ubtn', 'Upho', 'UCAM'] # list of authorized uid
+        self.authorized_uids = ['Ubtn', 'Upho', 'UCAM', 'Uben'] # list of authorized uid
         self.authorized_products = ['Arduino Uno', 'Arduino UNO WiFi']
         log.info("Hello from Gilberto") 
 
@@ -57,41 +58,35 @@ class Gilberto():
                 # Check if the device is an arduino uno
                 if device.product in self.authorized_products:
                     log.debug('Arduino detected: ' + str(device.device))
-                    # Add as new arduino device
-                    cur_device = sensor.Sensor(device.device)
-                    # Waiting for the first message
-                    cur_device.wait_helo()
-                    # Waiting for the device uid
-                    cur_device.uid = cur_device.uid().decode('utf-8')
-		    # Create a new device manager
-                    if cur_device.uid in self.authorized_uids:
-                        log.debug('Recognized sensor')
-                        self.sensors[cur_device.port] = cur_device
-                        self.rmanagers[cur_device.port] = RaspManager(self.central_address, self.central_port, cur_device, cur_device.uid, self.websocket)
-                        self.rmanagers[cur_device.port].device.state()
-                    else:
-                        log.warn('Unauthorized sensor connected')
-                         
+                    try:
+                    	# Add as new arduino device
+                    	cur_device = sensor.Sensor(device.device)
+                    	# Waiting for the first message
+                    	cur_device.wait_helo()
+                    	# Waiting for the device uid
+                    	cur_device.uid = cur_device.uid().decode('utf-8')
+		    	# Create a new device manager
+                    	if cur_device.uid in self.authorized_uids:
+                    	    log.debug('Recognized sensor')
+                    	    self.sensors[cur_device.port] = cur_device
+                    	    self.rmanagers[cur_device.port] = RaspManager(self.central_address, self.central_port, cur_device, cur_device.uid, self.websocket)
+                    	    self.rmanagers[cur_device.port].device.state()
+                    	else:
+                    	    log.warn('Unauthorized sensor connected')
+                    except:
+                         log.warn('could not connect to' + str(device.device)) 
 
     def heartbeat(self):
         """
-            Sees if the registered sensors are still here
+            Send heartbeat every 5 seconds
         """
         log.debug("Checking if everybody is here")
 
         log.debug(str(len(self.rmanagers)) + ' to check') 
+
         offline_devices = []
-        for port, rmanager in self.rmanagers.items():
-            if rmanager.device.state() is None:
-                log.warn("Device offline")
-                del self.sensors[port]
-                offline_devices.append(port)
-
-        log.debug('offline devices' + str(len(offline_devices)))
-        
-        self.rmanagers = {k:v for k, v in self.rmanagers.items() if k not in offline_devices}
-
-        log.debug(str(len(self.sensors)) + ' sensors answered') 
+        for rmanager in self.rmanagers.values():
+            rmanager.device.state()
 
     #def sensors_names(self):
     #    """
@@ -140,12 +135,43 @@ class Gilberto():
         log.error("uid not foud")
         
 
+    def check_devices(self):
+        """
+            check for each devices the difference between the current time and the last message reception time
+        """
+
+        # Browse all devices
+        offline_devices = []
+        current_time = time.time()
+
+        log.debug("number of online sensors " + str(len(self.rmanagers)))
+        for port, rmanager in self.rmanagers.items():
+             if current_time - rmanager.step_time > 12:
+                 # remove from list
+                 log.debug("Device " + str(rmanager.uid) + " offline !")
+                 offline_devices.append(port)
+
+                 # send to websocket error
+                 log.warn("offline device !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                 data = {}
+                 data["id"] = rmanager.uid
+                 data["state"] = "DECO"
+                 log.debug("sending {}".format(data))
+                 self.websocket.send(json.dumps(data))
+
+        for key in offline_devices:
+            del self.rmanagers[key]
+            del self.sensors[key]
+        #self.rmanagers = {k:v for k, v in self.rmanagers.items() if k not in offline_devices}
+        log.debug("removed " + str(len(offline_devices)) + " sensors ")
+
 def main():
     g = Gilberto()
     g.discover_sensors()
     while(True):
         g.discover_sensors()
-        #g.heartbeat()
+        g.heartbeat()
+        g.check_devices()
         time.sleep(5)
 
 if __name__ == '__main__':
