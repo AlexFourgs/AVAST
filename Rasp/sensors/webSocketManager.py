@@ -3,6 +3,10 @@ import websocket
 from websocket import create_connection
 import sender
 import receiver
+import logging
+import time
+
+log = logging.getLogger(__name__)
 
 class WebSocketManager:
 	"""
@@ -12,7 +16,16 @@ class WebSocketManager:
 	def __init__(self, address, port, on_message):
 		self.address = address
 		self.port = port
-		ws = create_connection("ws://" + address + ":" + port)
+
+		while True:
+			try:
+				ws = create_connection("ws://" + address + ":" + port)
+			except ConnectionRefusedError:
+				log.warn("Unable to connect to CC")
+				time.sleep(5)
+				continue
+			log.info("Connection established to CC")
+			break
 		
 		# Create Sender and receiver
 		self.snder = sender.Sender(ws)
