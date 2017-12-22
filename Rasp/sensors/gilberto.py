@@ -109,6 +109,18 @@ class Gilberto():
                 elif command == "STAT":
                     rmanager.device.state()
 
+                elif command == "TURR":
+                    rmanager.device.turn_right()
+
+                elif command == "TURL":
+                    rmanager.device.turn_left()
+
+                elif command == "TURD":
+                    rmanager.device.go_down()
+
+                elif command == "TURU":
+                    rmanager.device.go_up()
+
                 return True
             
         log.error("uid not foud")
