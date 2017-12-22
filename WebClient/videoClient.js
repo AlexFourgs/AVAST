@@ -11,12 +11,12 @@ var client = {
         var self = this, video = document.getElementById("video");
         console.log(url);
 
-        this.socket = new WebSocket(url);
+        // this.socket = new WebSocket(url);
+        this.socket = new WebSocket("ws://192.168.43.44:8000/websocket");
 
         // Request the video stream once connected
         this.socket.onopen = function () {
             console.log("Connected!");
-            self.readCamera();
         };
 
         // Currently, all returned messages are video data. However, this is

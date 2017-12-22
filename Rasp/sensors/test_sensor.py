@@ -5,8 +5,9 @@ import time
 
 def main():
 
-    arduino = Sensor('/dev/ttyACM1')  # Create a Sensor object
+    arduino = Sensor('/dev/ttyACM0')  # Create a Sensor object
     arduino.flushInput()  # Flushing input to clean it before doing things
+    arduino.wait_helo()
 
     print(arduino.state())  # Asking the sensor its current state
     time.sleep(1)

@@ -1,10 +1,22 @@
 // Let us open a web socket
 let ws = new WebSocket("ws://localhost:1337");
-// let ws = new WebSocket("ws://192.168.1.155:8100");
+
+let admin = false;
 
 let avastRq;
 let selectedCamIndex = -1;
 let selectedCamId = "";
+
+function init(mode) {
+    if (mode == 'admin') {
+        admin = true;
+    }
+    populateMenu();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// WEBSOCKET //////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 
 if ("WebSocket" in window) {
     console.log("WebSocket is supported by your Browser!");
@@ -15,9 +27,7 @@ else {
 }
 
 ws.onopen = function () {
-    // Web Socket is connected, send data using send()
-    // ws.send("Message to send");
-    // console.log("Message sent");
+    // Web Socket is connected
 };
 
 ws.onmessage = function (evt) {
@@ -28,13 +38,13 @@ ws.onmessage = function (evt) {
     let action = msg.actionProvider;
     switch (action.actionType) {
         case "listDevices":
-            if(action.actionData == "rq") {
+            if (action.actionData == "rq") {
                 let json = JSON.stringify(listDevices());
                 ws.send(json);
             }
             else if (action.actionData == "ans") {
                 avastRq = new AvastRequest();
-                for(dev in msg.devices) {
+                for (dev in msg.devices) {
                     avastRq.addDevice(msg.devices[dev]);
                 }
                 resetMenu();
@@ -48,6 +58,19 @@ ws.onmessage = function (evt) {
             avastRq = deviceList;
             resetMenu();
             break;
+        case "networkAlert":
+            if(admin) {
+                let path = document.getElementById("connection-"+action.actionData.path);
+                switch(action.actionData.type) {
+                    case "deco":
+                        path.style.color = "red";
+                        break;
+                    case "reco":
+                        path.style.color = "green";
+                        break;
+                }
+            }
+            break;
     }
 };
 
@@ -57,7 +80,7 @@ ws.onclose = function () {
 };
 
 ws.sendMessage = function (msg) {
-    waitForSocketConnection(ws, function() {
+    waitForSocketConnection(ws, function () {
         ws.send(msg);
     });
 };
@@ -71,7 +94,7 @@ function waitForSocketConnection(socket, callback) {
         function () {
             if (socket.readyState === 1) {
                 console.log("Connection is made")
-                if(callback != null){
+                if (callback != null) {
                     callback();
                 }
                 return;
@@ -84,6 +107,40 @@ function waitForSocketConnection(socket, callback) {
         }, 5);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// REQUESTS ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+function populateMenu() {
+    let avastRq = new AvastRequest();
+    avastRq.setAction(new AvastRequestAction("listDevices", "rq"));
+    ws.sendMessage(JSON.stringify(avastRq));
+}
+
+function rqChangeDeviceState(id, newState) {
+    let deviceList = new AvastRequest();
+    deviceList.addDevice(avastRq.devices[id]);
+    deviceList.setAction(new AvastRequestAction("state", newState))
+    return deviceList;
+}
+
+function changeCam() {
+    client.close();
+
+    let camSelect = document.getElementById("camSelect");
+    selectedCamId = camSelect.value;
+    selectedCamIndex = camSelect.selectedIndex;
+    // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+
+    let avastRequest = new AvastRequest();
+    avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
+    ws.send(JSON.stringify(avastRequest));
+}
+
+/////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// HTML BUILDER ////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
 let states = {
     "REDY": {
         "fr": "Armé",
@@ -92,8 +149,8 @@ let states = {
     },
     "ALRM": {
         "fr": "Alarme",
-        "btn": "btnDEAC(",
-        "btnFr": "Désarmer"
+        "btn": "btnREDY(",
+        "btnFr": "Ré-armer"
     },
     "DEAC": {
         "fr": "Désarmé",
@@ -105,32 +162,16 @@ let states = {
     }
 };
 
-function openNav() {
-    document.getElementById("devicesNav").style.width = "250px";
-}
-
-function closeNav() {
-    document.getElementById("devicesNav").style.width = "0px";
-}
-
-function init() {
-    populateMenu();
-}
-
-function populateMenu() {
-    let avastRq = new AvastRequest();
-    avastRq.setAction(new AvastRequestAction("listDevices", "rq"));
-    ws.sendMessage(JSON.stringify(avastRq));
-}
-
 function resetMenu() {
     let camCounter = 0;
     let devicesNav = document.getElementById("devicesNav");
     let camSelect = document.getElementById("camSelect");
 
-    selectedCamIndex = camSelect.selectedIndex;
-    while (camSelect.firstChild) {
-        camSelect.removeChild(camSelect.firstChild);
+    if (!admin) {
+        selectedCamIndex = camSelect.selectedIndex;
+        while (camSelect.firstChild) {
+            camSelect.removeChild(camSelect.firstChild);
+        }
     }
 
     while (devicesNav.firstChild) {
@@ -144,44 +185,40 @@ function resetMenu() {
     closeA.appendChild(document.createTextNode("×"));
     devicesNav.appendChild(closeA);
 
-    for(devI in avastRq.devices) {
-        console.log(devI);
+    for (devI in avastRq.devices) {
         let dev = avastRq.devices[devI];
-        // let devDiv = document.getElementById(dev.id);
-        // devicesNav.removeChild(devDiv);
         addToMenu(dev);
-        if(dev.type == "camera") {
+        if (dev.type == "camera" && !admin) {
             let option = document.createElement("option");
             option.value = dev.id;
             option.appendChild(document.createTextNode(dev.id));
-            if(camCounter == 0) {
+            if (camCounter == 0) {
                 option.selected = true;
                 selectedCamIndex = 0;
                 selectedCamId = dev.id;
             }
             camSelect.appendChild(option);
-            camCounter ++;
+            camCounter++;
         }
     }
-    if(camCounter == 0) {
-        document.getElementById("camContainer").style.visibility = "hidden";
-        document.getElementById("moveContainer").style.visibility = "hidden";
-    }
-    else {
-        document.getElementById("camContainer").style.visibility = "visible";
-        if(avastRq.devices[selectedCamId].videoProvider != null) {
-            client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+    if (!admin) {
+        if (camCounter == 0) {
+            document.getElementById("camContainer").style.visibility = "hidden";
+            document.getElementById("moveContainer").style.visibility = "hidden";
         }
-        document.getElementById("moveContainer").style.visibility = "visible";
-    }
-}
+        else {
+            document.getElementById("camContainer").style.visibility = "visible";
+            if (avastRq.devices[selectedCamId].videoProvider != null) {
+                // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+                client.connect("ws://localhost:1338");
 
-function changeCam() {
-    client.close();
-    let camSelect = document.getElementById("camSelect");
-    selectedCamId = camSelect.value;
-    selectedCamIndex = camSelect.selectedIndex;
-    client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
+                let avastRequest = new AvastRequest();
+                avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
+                ws.send(JSON.stringify(avastRequest));
+            }
+            document.getElementById("moveContainer").style.visibility = "visible";
+        }
+    }
 }
 
 function addToMenu(device) {
@@ -198,11 +235,11 @@ function addToMenu(device) {
 
     let stateDiv = document.createElement('div');
     let stateSpan = document.createElement('span');
-    stateSpan.className = 'state state-'+device.state;
+    stateSpan.className = 'state state-' + device.state;
     stateSpan.appendChild(document.createTextNode(states[device.state].fr));
     let actionBtn = document.createElement('button');
     actionBtn.type = 'button';
-    actionBtn.setAttribute("onclick", states[device.state].btn+"\""+device.id+"\")");
+    actionBtn.setAttribute("onclick", states[device.state].btn + "\"" + device.id + "\")");
     actionBtn.appendChild(document.createTextNode(states[device.state].btnFr));
     stateDiv.appendChild(stateSpan);
     stateDiv.appendChild(actionBtn);
@@ -212,31 +249,36 @@ function addToMenu(device) {
     devicesNav.appendChild(devDiv);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// BUTTONS //////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+
+function openNav() {
+    document.getElementById("devicesNav").style.width = "250px";
+}
+
+function closeNav() {
+    document.getElementById("devicesNav").style.width = "0px";
+}
+
 function btnDEAC(id) {
-    console.log("DEAC "+id);
+    console.log("DEAC " + id);
     avastRq = rqChangeDeviceState(id, "DEAC");
     let json = JSON.stringify(avastRq);
     ws.send(json);
 }
 
 function btnREDY(id) {
-    console.log("REDY "+id);
+    console.log("REDY " + id);
     avastRq = rqChangeDeviceState(id, "REDY");
     let json = JSON.stringify(avastRq);
     ws.send(json);
 }
 
-function rqChangeDeviceState(id, newState) {
-	let deviceList = new AvastRequest();
-    deviceList.addDevice(avastRq.devices[id]);
-    deviceList.setAction(new AvastRequestAction("state", newState))
-	return deviceList;
-}
-
 function btnMoveCam(direction) {
     let deviceList = new AvastRequest();
-    
-    console.log("Move "+direction);
+
+    console.log("Move " + direction);
     console.log(avastRq.devices[selectedCamId]);
     deviceList.addDevice(Object.assign({}, avastRq.devices[selectedCamId]));
     deviceList.setAction(new AvastRequestAction("move", direction));
