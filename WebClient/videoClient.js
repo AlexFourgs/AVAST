@@ -7,16 +7,15 @@
 var client = {
 
     // Connects to Pi via websocket
-    connect: function (url) {
+    connect: function () {
         var self = this, video = document.getElementById("video");
-        console.log(url);
-
-        // this.socket = new WebSocket(url);
-        this.socket = new WebSocket("ws://192.168.43.44:8000/websocket");
+        
+        this.socket = new WebSocket("ws://192.168.43.155:1338");
 
         // Request the video stream once connected
         this.socket.onopen = function () {
             console.log("Connected!");
+            self.socket.send("startStream");
         };
 
         // Currently, all returned messages are video data. However, this is
@@ -28,11 +27,6 @@ var client = {
         this.socket.onclose = function(msg) {
             video.src = "404.jpg";
         };
-    },
-
-    // Requests video stream
-    readCamera: function () {
-        this.socket.send("read_camera");
     },
 
     close: function() {

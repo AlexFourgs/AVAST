@@ -26,6 +26,11 @@ class Sensor(serial.Serial):
         :params: See pyserial's class Serial.
     """
 
+    def wait_helo(self):
+        log.info("Waiting for sensor...")
+        self.flushInput()
+        self.readline()[:4]
+
     def send_cmd(self, cmd):
         """
             Send a command to the sensor
@@ -33,42 +38,72 @@ class Sensor(serial.Serial):
         try:
             self.flushInput()
             self.write(cmd.encode('ASCII'))
-        except SerialException as e:
+            print(cmd.encode('ASCII'))
+            #return self.readline()[:4]
+        except Exception as e:
             log.error("Sensor unavailable !")
             return None
-        return self.readline()[:4]
 
     def state(self):
         """
             Get the actual state of a sensor.
         """
         log.debug("issued command state")
-        return self.send_cmd('s')
+        self.send_cmd('s')
 
     def ready(self):
         """
             Tell to a sensor to go into Ready mode.
         """
         log.debug("issued command ready")
-        return self.send_cmd('r')
+        self.send_cmd('r')
 
     def deactivate(self):
         """
             Deactivate a sensor.
         """
         log.debug("issued command deactivate")
-        return self.send_cmd('d')
+        self.send_cmd('d')
 
     def alarm(self):
         """
             Trigger the alarm of a sensor.
         """
         log.debug("issued command alarm")
-        return self.send_cmd('a')
+        self.send_cmd('a')
+
+    def turn_left(self):
+        """
+            Send a command to move the servo-motor left
+        """
+        log.debug("issued command turn left")
+        self.send_cmd('Q')
+
+    def turn_right(self):
+        """
+            Send a command to move the servo-motor right
+        """
+        log.debug("issued command turn right")
+        self.send_cmd('D')
+
+    def go_up(self):
+        """
+            Send a command to move the servo-motor up
+        """
+        log.debug("issued command go up")
+        self.send_cmd('Z')
+
+    def go_down(self):
+        """
+            Send a command to move the servo-motor down
+        """
+        log.debug("issued command go down")
+        self.send_cmd('S')
 
     def uid(self):
         """
             Get the uid of the sensor
         """
         log.debug("issued command uid")
-        return self.send_cmd('u')
+        self.send_cmd('u')
+        return self.readline()[:4]

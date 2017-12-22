@@ -1,5 +1,6 @@
 import asyncio
 import websockets
+import time
 
 async def hello(websocket, path):
     while True:
@@ -7,7 +8,7 @@ async def hello(websocket, path):
         #print("< {}".format(name))
 
         #greeting = "Hello {}!".format(name)
-        await websocket.send("fdp")
+        #await websocket.send('{"stateChgt": "ALRM", "uid": "Ubtn"}')
         print(name)
 
 start_server = websockets.serve(hello, 'localhost', 7777)
