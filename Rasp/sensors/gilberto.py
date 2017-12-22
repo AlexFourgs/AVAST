@@ -18,7 +18,7 @@ class Gilberto():
         self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc) # Websocket manager creation
         self.sensors = {} # List sensors
         self.rmanagers = {} # list serial port managers
-        self.authorized_uids = ['Ubtn', 'Upho', 'UCAM'] # list of authorized uid
+        self.authorized_uids = ['Ubtn', 'Upho', 'UCAM', 'Uben'] # list of authorized uid
         self.authorized_products = ['Arduino Uno', 'Arduino UNO WiFi']
         log.info("Hello from Gilberto") 
 
