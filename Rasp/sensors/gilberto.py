@@ -12,9 +12,9 @@ log = logging.getLogger(__name__)
 class Gilberto():
 
     def __init__(self):
-        #self.central_address = '192.168.43.166' # Address of the webserver
-        self.central_address = 'localhost' # Address of the webserver
-        self.central_port = '7777' #'8100' # Port of the webserver
+        self.central_address = '192.168.43.166' # Address of the webserver
+        #self.central_address = 'localhost' # Address of the webserver
+        self.central_port = '8100' #'8100' # Port of the webserver
         self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc) # Websocket manager creation
         self.sensors = {} # List sensors
         self.rmanagers = {} # list serial port managers
@@ -144,21 +144,26 @@ class Gilberto():
         offline_devices = []
         current_time = time.time()
 
-        log.debug("number of online sensors" + str(len(self.rmanagers)))
+        log.debug("number of online sensors " + str(len(self.rmanagers)))
         for port, rmanager in self.rmanagers.items():
-             if current_time - rmanager.step_time > 6:
+             if current_time - rmanager.step_time > 12:
                  # remove from list
+                 log.debug("Device " + str(rmanager.uid) + " offline !")
                  offline_devices.append(port)
 
                  # send to websocket error
-                 log.warn("offline device")
+                 log.warn("offline device !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                  data = {}
                  data["id"] = rmanager.uid
                  data["state"] = "DECO"
+                 log.debug("sending {}".format(data))
                  self.websocket.send(json.dumps(data))
 
-        self.rmanagers = {k:v for k, v in self.rmanagers.items() if k not in offline_devices}
-        log.debug("number of online sensors" + str(len(self.rmanagers)))
+        for key in offline_devices:
+            del self.rmanagers[key]
+            del self.sensors[key]
+        #self.rmanagers = {k:v for k, v in self.rmanagers.items() if k not in offline_devices}
+        log.debug("removed " + str(len(offline_devices)) + " sensors ")
 
 def main():
     g = Gilberto()
