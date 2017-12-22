@@ -4,6 +4,7 @@ var player = require('play-sound')(opts = {})
 var zeroconf = require('zeroconf')()
 const { exec } = require('child_process');
 var WebSocketClient = require("ws");
+var AsyncPolling = require('async-polling');
 
 // Port where we'll run the websocket server
 var localPort = 8100;
@@ -11,15 +12,21 @@ var localPort = 8100;
 
 // advertise an HTTP server on port 3000 
 // zeroconf.tcp.publish('cc-atelier-RT', 8100)
-zeroconf.publish({ type: 'cc-atelier-RT', protocol: 'tcp', port: 8100, name: 'cc-atelier-RT' })
+// zeroconf.publish({ type: 'cc-atelier-RT', protocol: 'tcp', port: 8100, name: 'cc-atelier-RT' })
 
 
 
-
+try {
+	// 
+} catch (e) {
+	console.error("stream to server web not connected")
+}
+var wsstreamrasp;
+var wsstreamweb;
 var webServerIp = "192.168.43.155" // "127.0.0.1" //
 var webServerPort = 1337;
 var isWebServer = false;
-
+var WebSocketWebServerURL = 'ws://' + webServerIp + ':' + webServerPort
 
 
 
@@ -31,10 +38,97 @@ var isWebServer = false;
 
 var clients = [];
 var clientsIPs = [];
-var wsc;
+var wsc
 
-var wsstreamweb = new WebSocketClient("ws://" + webServerIp + ":" + 1338)
-var wsstreamrasp;
+
+var Avast = new avastRq.AvastRequest();
+
+try {
+	wsc = new WebSocketClient(WebSocketWebServerURL);
+} catch (e) {
+	console.log("unable to connect the server")
+}
+
+data_temp = []
+
+function handle_socketNetworkFail_rasp(clientidX) {
+
+	if (Avast.devices[clientidX].state != "DECO") {
+		Avast.devices[clientidX].state = "DECO"
+		Avast.setAction(new avastRq.AvastRequestAction("networkAlert", {
+			type: "DECO",
+			path: "cc." + clientidX
+		}))
+
+		sendToWebServer(JSON.stringify(Avast));
+		Avast.actionProvider = null
+
+		Avast.setAction(new avastRq.AvastRequestAction("refreshAvast", null))
+		sendToWebServer(JSON.stringify(Avast))
+		Avast.actionProvider = []
+		console.log("raspberry with device "+ clientidX + " disconected")
+ 
+ 	}
+
+
+}
+
+
+function handle_reco_rasp(clientidX) {
+
+	if (Avast.devices[clientidX].state != "DECO") {
+		Avast.setAction(new avastRq.AvastRequestAction("networkAlert", {
+			type: "RECO",
+			path: "cc." + clientidX
+		}))
+
+		sendToWebServer(JSON.stringify(Avast));
+		Avast.actionProvider = null
+
+
+	}
+
+
+}
+
+AsyncPolling(function (end) {
+
+
+	for (clientidX in clientsIPs) {
+		client = clientsIPs[clientidX];
+		if (clientsIPs[clientidX].readyState != clientsIPs[clientidX].OPEN) {
+			handle_socketNetworkFail_rasp(clientidX);
+			continue
+		}
+
+
+		try {
+			console.log("ping devices " + clientidX)
+			requesttoclient = {
+				id: clientidX,
+				networkRequest: "ping"
+			}
+			client.send(JSON.stringify(requesttoclient))
+		} catch (e) {
+			handle_socketNetworkFail_rasp(clientidX);
+		};
+
+
+
+	};
+	end();
+	// This will schedule the next call. 
+}, 1000).run();
+
+
+exec('/usr/bin/aplay base_maj.wav', (err, stdout, stderr) => {
+	if (err) {
+		console.error(err);
+		return;
+	}
+	console.log(stdout);
+});
+
 // function startstream(deviceId){
 // 	wsstreamweb = new WebSocket("ws://"+webServerIp+":"+1338)
 // 	wsstreamrasp = new WebSocket("ws://"+clientsIPs[deviceId]._socket.remoteAddress+":"+8000)
@@ -50,26 +144,41 @@ var wsstreamrasp;
 
 function startstream(deviceId) {
 	try {
-		wsstreamrasp = new WebSocketClient("ws://192.168.43.44:8000/websocket")
+		wsstreamrasp = new WebSocketClient("ws://192.168.43.212:"+8000+"/websocket")
+
+		wsstreamweb = new WebSocketClient("ws://" + webServerIp + ":" + 1338)
 	} catch (e) {
-		console.log("cannot connect to rasp websocket : " )
+		console.log("cannot connect to rasp websocket : ")
 	}
-	
+	var wsstreamraspOpen;
+	var wsstreamwebOpen;
 	console.log("webserver ask start stream function");
-	wsstreamrasp.on('connection', function (wsstreamrasp) {
-		console.log("stream from rasp")
-		wsstreamrasp.send("read_camera")
-
-		wsstreamweb.on('connection', function (wsstreamweb) {
-			console.log("stream to webserver opened")
-
-			
-			wsstreamrasp.on("message", function (data) {
-				wsstreamweb.send(data);
-				console.log(data)
-			});
-		});
+	wsstreamrasp.on('open', function open() {
+		wsstreamraspOpen = true;
+		wsstreamrasp.send("read_camera");
+		console.log("stream to rasp opened")
 	});
+	wsstreamrasp.on('close', function close() {
+		wsstreamraspOpen = false;
+		console.log("stream to rasp closed")
+	});
+	wsstreamweb.on('open', function open() {
+		wsstreamwebOpen = true;
+		console.log("stream to webserver closed")
+
+	});
+	wsstreamweb.on('close', function close() {
+		wsstreamwebOpen = false;
+		console.log("stream to webserver closed")
+	});
+
+	wsstreamrasp.on("message", function (data) {
+		if (wsstreamwebOpen == true && wsstreamweb.readyState == wsstreamweb.OPEN){
+			wsstreamweb.send(data);
+		}
+			
+	});
+
 
 }
 
@@ -81,7 +190,7 @@ function stopstream() {
 }
 
 
-var Avast = new avastRq.AvastRequest();
+
 function buildFakeDevices() {
 
 	// Avast.addDevice(new avastRq.AvastRequestDevice("photo1", "photo", "REDY"));
@@ -94,7 +203,7 @@ function buildFakeDevices() {
 	// cam2.addVideo(new avastRq.AvastRequestDeviceVideo("H264", "ws://localhost:8001/websocket"));
 	// Avast.addDevice(cam2);
 }
-buildFakeDevices();
+// buildFakeDevices();
 
 function sendToDeviceId(id, data) {
 	if (clientsIPs[id] != null) {
@@ -108,18 +217,57 @@ function sendToDeviceId(id, data) {
 	}
 }
 
+function sendToWebServer(data) {
+	if (wsc.readyState == wsc.OPEN) {
+		wsc.send(data);
+	} else {
+		data.push(data)
+		console.log("serverWeb Disconected")
+
+		setTimeout(function () {
+			try {
+				wsc = new WebSocketClient(WebSocketWebServerURL);
+			} catch (e) {
+				console.log("Webserver: reconnecting...");
+			}
+		}, 500);
+	}
+
+}
+
+
 
 console.log("starting centralCom!");
 
 
-var WebSocketWebServerURL = 'ws://' + webServerIp + ':' + webServerPort
+
 try {
-	wsc = new WebSocketClient(WebSocketWebServerURL);
+
 	wsc.on('open', function open() {
+		console.log("webserver online");
 		Avast.setAction(new avastRq.AvastRequestAction("registerCC", null))
-		wsc.send(JSON.stringify(Avast));
+		sendToWebServer(JSON.stringify(Avast));
 		Avast.actionProvider = []
+		console.log(" registering on webserver");
+		for (dataIDX in data_temp) {
+			sendToWebServer(data);
+		}
+
 	});
+
+	wsc.on("error", function error() {
+		console.log("the web server is unreachable")
+
+		setTimeout(function () {
+
+			try {
+				wsc = new WebSocketClient(WebSocketWebServerURL);
+			} catch (e) {
+				console.log("WebSocketClient: reconnecting...");
+			}
+		}, 500);
+	});
+
 
 	wsc.on('message', function (data) {
 		try {
@@ -140,10 +288,10 @@ try {
 						device = ob["devices"][deviceIdx]
 						requestToRasp = {
 							id: deviceIdx,
-							move: ob.actionProvider
+							move: ob.actionProvider.actionData
 						}
 						sendToDeviceId(deviceIdx, requestToRasp)
-						console.log("move action")
+						console.log("sending move action " + data + "  to " + deviceIdx)
 					}
 					break;
 				case "state":
@@ -157,15 +305,15 @@ try {
 
 
 						Avast.setAction(new avastRq.AvastRequestAction("refreshAvast", null))
-						wsc.send(JSON.stringify(Avast))
-						Avast.actionProvider = []
+						sendToWebServer(JSON.stringify(Avast))
+						Avast.actionProvider = null;
 					}
 					break;
 
 				case "listDevices":
 					Avast.setAction(new avastRq.AvastRequestAction("refreshAvast", null))
-					wsc.send(JSON.stringify(Avast))
-					Avast.actionProvider = []
+					sendToWebServer(JSON.stringify(Avast))
+					Avast.actionProvider = null
 					console.log("webserver ask list of device");
 					break;
 				case "startStream":
@@ -257,14 +405,17 @@ ws.on('connection', function (ws) {
 			+ ws._socket.remoteAddress + " have send \"" + data + "\"");
 
 		// registering the device
-		if (ob["id"] != undefined && ob["type"] != undefined && ob["state"] != undefined) {
-			if (Avast["devices"][ob["id"]] != undefined && clientsIPs[ob["id"]].readyState === clientsIPs[ob["id"]].OPEN) {
-				//the device is already registered
-				console.log("device already registered : changing state to " + ob["state"])
-				Avast["devices"][ob["id"]].state = ob["state"];
-				if (ob["state"] == "ALRM") {
-					// play now and callback when playend 
+		if (ob["id"] != undefined && ob["networkRequest"] != undefined) {
+			// console.log("networkService  id : " + ob["id"] + " ans:" + ob["networkRequest"])
+			return;
 
+		} else if (ob["id"] != undefined && ob["state"] != undefined) {
+
+			//the device is already registered
+
+			switch (ob["state"]) {
+				// play now and callback when playend 
+				case "ALRM":
 					exec('/usr/bin/aplay menace_detectee.wav', (err, stdout, stderr) => {
 						if (err) {
 							console.error(err);
@@ -274,27 +425,44 @@ ws.on('connection', function (ws) {
 					});
 					console.log("HALLLLAAAARRRMMMM !!!!!")
 
-				}
-			} else {
-				Avast.addDevice(new avastRq.AvastRequestDevice(ob["id"], ob["type"], ob["state"]))
-				clientsIPs[ob["id"]] = ws
-				console.log("registering device: ")
-				console.log(ob)
 
+					break;
+				case "DECO":
+					Avast.setAction(new avastRq.AvastRequestAction("networkAlert", {
+						type: "DECO",
+						path: "rasp." + ob["id"]
+					}))
+					sendToWebServer(JSON.stringify(Avast));
+					Avast.actionProvider = null
+					console.log("device id" + ob["id"] + "is disconnected")
+					break;
+				default:
+
+					if (Avast["devices"][ob["id"]] == undefined) {
+						Avast.addDevice(new avastRq.AvastRequestDevice(ob["id"], ob["type"], ob["state"]))
+						clientsIPs[ob["id"]] = ws
+						console.log("registering device: ")
+						console.log(ob)
+					} else {
+						if (Avast["devices"][ob["id"]].state == "DECO") {
+							clientsIPs[ob["id"]] = ws
+							handle_reco_rasp(ob["id"]);
+						}
+						console.log("device already registered : changing state from " + Avast["devices"][ob["id"]].state + " to " + ob["state"])
+
+					}
+					break;
 			}
-		} else {
-			console.error("invalid data ");
+			Avast["devices"][ob["id"]].state = ob["state"];
+
 		}
 
 		try {
 			Avast.setAction(new avastRq.AvastRequestAction("refreshAvast", null))
-			wsc.send(JSON.stringify(Avast))
+			sendToWebServer(JSON.stringify(Avast))
 			Avast.actionProvider = []
-
-
 		} catch (e) {
 			console.log
 		};
-
 	});
 });
