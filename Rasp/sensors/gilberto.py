@@ -27,7 +27,15 @@ class Gilberto():
         """
         log.debug('New request from CC')
         parsed_json = json.loads(message) # Load message as json
-        self.send_command(parsed_json['id'], parsed_json['stateChgt']) # Send command to 
+
+        if 'stateChgt' in parsed_json:
+            self.send_command(parsed_json['id'], parsed_json['stateChgt']) # Send command to 
+        
+        elif 'networkRequest' in parsed_json:
+            data = {}
+            data['id'] = parsed_json['id']
+            data['networkRequest'] = "pong"
+            self.websocket.send(json.dumps(data))
 
     def discover_sensors(self):
         """
