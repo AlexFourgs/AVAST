@@ -72,6 +72,34 @@ class Sensor(serial.Serial):
         log.debug("issued command alarm")
         self.send_cmd('a')
 
+    def turn_left(self):
+        """
+            Send a command to move the servo-motor left
+        """
+        log.debug("issued command turn left")
+        self.send_cmd('Q')
+
+    def turn_right(self):
+        """
+            Send a command to move the servo-motor right
+        """
+        log.debug("issued command turn right")
+        self.send_cmd('D')
+
+    def go_up(self):
+        """
+            Send a command to move the servo-motor up
+        """
+        log.debug("issued command go up")
+        self.send_cmd('Z')
+
+    def go_down(self):
+        """
+            Send a command to move the servo-motor down
+        """
+        log.debug("issued command go down")
+        self.send_cmd('S')
+
     def uid(self):
         """
             Get the uid of the sensor

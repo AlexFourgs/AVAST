@@ -1,0 +1,8 @@
+[Unit]
+After=idle
+
+[Service]
+ExecStart=/home/pi/AVAST/Rasp/autoboot/start-gilberto.sh
+
+[Install]
+WantedBy=default.target

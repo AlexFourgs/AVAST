@@ -8,7 +8,7 @@ async def hello(websocket, path):
         #print("< {}".format(name))
 
         #greeting = "Hello {}!".format(name)
-        await websocket.send('{"stateChgt": "ALRM", "uid": "Ubtn"}')
+        #await websocket.send('{"stateChgt": "ALRM", "uid": "Ubtn"}')
         print(name)
 
 start_server = websockets.serve(hello, 'localhost', 7777)
