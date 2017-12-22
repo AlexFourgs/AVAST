@@ -70,16 +70,16 @@ void manage_states() {
     } else if(command[0] == 'r') {
       Serial.println("REDY");
     } else if(command[0] == 'D') { // Tourner à droite
-      Serial.println("TURR");
+      //Serial.println("TURR");
       turn_right();
     } else if(command[0] == 'Q') { // Tourner à gauche
-      Serial.println("TURL");
+      //Serial.println("TURL");
       turn_left();
     } else if(command[0] == 'Z') { // Tourner en haut
-      Serial.println("TURU");
+      //Serial.println("TURU");
       turn_up();
     } else if(command[0] == 'S') { // Tourner en bas
-      Serial.println("TURD");
+      //Serial.println("TURD");
       turn_down();
     }
    } else if(state == 'd') { // deactivated
@@ -120,7 +120,7 @@ void turn_up()
   {
     motor_vert_angle += 5 ;
     motor_vert.write(motor_vert_angle);
-    Serial.println(motor_vert_angle);
+    //Serial.println(motor_vert_angle);
     delay(100);
   }
 }
@@ -131,7 +131,7 @@ void turn_down()
   {
     motor_vert_angle -= 5 ; 
     motor_vert.write(motor_vert_angle);
-    Serial.println(motor_vert_angle);
+    //Serial.println(motor_vert_angle);
     delay(100);
   }
 }
@@ -142,6 +142,7 @@ void turn_right()
   {
     motor_hori_angle += 5 ;
     motor_hori.write(motor_hori_angle);
+    //Serial.println(motor_hori_angle);
     delay(100);
   }
 }
@@ -152,6 +153,7 @@ void turn_left()
   {
     motor_hori_angle -= 5 ; 
     motor_hori.write(motor_hori_angle);
+    //Serial.println(motor_hori_angle);
     delay(100);
   }
 }
