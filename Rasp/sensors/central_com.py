@@ -8,6 +8,9 @@ import time
 from sensor import Sensor
 from serial_communication import SerialCommunication
 import json
+import logging
+
+log = logging.getLogger(__name__)
 
 class RaspManager:
 	"""
@@ -37,9 +40,17 @@ class RaspManager:
 		"""
 		data = {}
 		data["id"] = self.uid
-		data["type"] = ""
+		log.debug(self.uid)
+		if self.uid == "UCAM":
+			data["type"] = "camera"
+			log.debug("type is cam")
+
+		else :
+			data["type"] = ""
+
 		data["state"] = message.decode("UTF-8")
 		self.websocket.send(json.dumps(data))
+   
 
 	def __init__(self, address, port, device, uid, websocket):
 		# Declare datas

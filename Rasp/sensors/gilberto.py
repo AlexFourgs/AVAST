@@ -17,7 +17,8 @@ class Gilberto():
         self.websocket = WebSocketManager(self.central_address, self.central_port, self.on_message_cc) # Websocket manager creation
         self.sensors = {} # List sensors
         self.rmanagers = {} # list serial port managers
-        self.authorized_uids = ['Ubtn', 'Upho'] # list of authorized uid
+        self.authorized_uids = ['Ubtn', 'Upho', 'UCAM'] # list of authorized uid
+        self.authorized_products = ['Arduino Uno', 'Arduino UNO WiFi']
         log.info("Hello from Gilberto") 
 
     def on_message_cc(self, message):
@@ -25,12 +26,15 @@ class Gilberto():
             Callback : define the behaviour of a message reception
 
         """
-        log.debug('New request from CC')
+        log.debug('New request from CC' + str(message))
         parsed_json = json.loads(message) # Load message as json
 
         if 'stateChgt' in parsed_json:
             self.send_command(parsed_json['id'], parsed_json['stateChgt']) # Send command to 
         
+        elif 'move' in parsed_json:
+            self.send_command(parsed_json['id'], parsed_json['move'])
+
         elif 'networkRequest' in parsed_json:
             data = {}
             data['id'] = parsed_json['id']
@@ -48,9 +52,10 @@ class Gilberto():
 
         # Browse devices
         for device in serial.tools.list_ports.comports():
+            log.debug(device.product)
             if device.device not in self.sensors.keys():
                 # Check if the device is an arduino uno
-                if(device.product == 'Arduino Uno'):
+                if device.product in self.authorized_products:
                     log.debug('Arduino detected: ' + str(device.device))
                     # Add as new arduino device
                     cur_device = sensor.Sensor(device.device)
@@ -66,6 +71,7 @@ class Gilberto():
                         self.rmanagers[cur_device.port].device.state()
                     else:
                         log.warn('Unauthorized sensor connected')
+                         
 
     def heartbeat(self):
         """
