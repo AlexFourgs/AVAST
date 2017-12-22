@@ -81,6 +81,10 @@ body {
     color: orange;
 }
 
+.sidenav .state-DECO {
+    color: #CCC;
+}
+
 @media screen and (max-height: 450px) {
     .sidenav {
         padding-top: 15px;
@@ -141,7 +145,7 @@ body {
     background-color: #DDD;
 }
 
-@media only screen and (max-width:600px) {
+@media only screen and (max-width:510px) {
     #main {
         margin: auto;
         width: 90vw;

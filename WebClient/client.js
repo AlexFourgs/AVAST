@@ -1,5 +1,5 @@
 // Let us open a web socket
-let ws = new WebSocket("ws://localhost:1337");
+let ws = new WebSocket("ws://192.168.43.155:1337");
 
 let admin = false;
 
@@ -59,14 +59,49 @@ ws.onmessage = function (evt) {
             resetMenu();
             break;
         case "networkAlert":
-            if(admin) {
-                let path = document.getElementById("connection-"+action.actionData.path);
-                switch(action.actionData.type) {
-                    case "deco":
-                        path.style.color = "red";
+            if (admin) {
+                let path = action.actionData.path.split(".");
+                let obj1 = path[0];
+                let obj2 = path[1];
+
+                if (obj1 == "cc") {
+                    switch (path[1]) {
+                        case "Ubtn":
+                        case "Upho":
+                            obj2 = "rasp1";
+                            break;
+                        case "UCAM":
+                        case "Uben":
+                            obj2 = "rasp2";
+                            break;
+
+                    }
+				}
+				else {
+					switch (path[1]) {
+                        case "Ubtn":
+                        case "Upho":
+                            obj1 = "rasp1";
+                            break;
+                        case "UCAM":
+                        case "Uben":
+                            obj1 = "rasp2";
+                            break;
+
+                    }
+				}
+				
+				console.log(obj1);
+				console.log(obj2);
+
+                let td = document.getElementById("connection-" + obj1 + "-" + obj2);
+                console.log("connection-" + obj1 + "-" + obj2 + " " + action.actionData.type);
+                switch (action.actionData.type) {
+                    case "DECO":
+                        td.style.color = "red";
                         break;
-                    case "reco":
-                        path.style.color = "green";
+                    case "RECO":
+                        td.style.color = "green";
                         break;
                 }
             }
@@ -125,16 +160,11 @@ function rqChangeDeviceState(id, newState) {
 }
 
 function changeCam() {
-    client.close();
-
+	console.log("Changing cam");
     let camSelect = document.getElementById("camSelect");
     selectedCamId = camSelect.value;
-    selectedCamIndex = camSelect.selectedIndex;
-    // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
-
-    let avastRequest = new AvastRequest();
-    avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
-    ws.send(JSON.stringify(avastRequest));
+	selectedCamIndex = camSelect.selectedIndex;
+	client.connect();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,9 +208,20 @@ function resetMenu() {
         devicesNav.removeChild(devicesNav.firstChild);
     }
 
+	let adminA = document.createElement("a");
+	adminA.setAttribute("id", "admin");
+	if(admin) {
+		adminA.setAttribute("href", "client.html");
+		adminA.appendChild(document.createTextNode("Client"));
+	}
+	else {
+		adminA.setAttribute("href", "admin.php");
+		adminA.appendChild(document.createTextNode("Admin"));
+	}
+	devicesNav.appendChild(adminA);
     let closeA = document.createElement("a");
     closeA.href = "javascript:void(0)";
-    closeA.className = "closebtn";
+	closeA.setAttribute("id", "closebtn");
     closeA.setAttribute("onclick", "closeNav()");
     closeA.appendChild(document.createTextNode("×"));
     devicesNav.appendChild(closeA);
@@ -208,14 +249,7 @@ function resetMenu() {
         }
         else {
             document.getElementById("camContainer").style.visibility = "visible";
-            if (avastRq.devices[selectedCamId].videoProvider != null) {
-                // client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
-                client.connect("ws://localhost:1338");
-
-                let avastRequest = new AvastRequest();
-                avastRequest.setAction(new AvastRequestAction("startStream", selectedCamId));
-                ws.send(JSON.stringify(avastRequest));
-            }
+			// client.connect();
             document.getElementById("moveContainer").style.visibility = "visible";
         }
     }
@@ -235,14 +269,19 @@ function addToMenu(device) {
 
     let stateDiv = document.createElement('div');
     let stateSpan = document.createElement('span');
-    stateSpan.className = 'state state-' + device.state;
-    stateSpan.appendChild(document.createTextNode(states[device.state].fr));
-    let actionBtn = document.createElement('button');
-    actionBtn.type = 'button';
-    actionBtn.setAttribute("onclick", states[device.state].btn + "\"" + device.id + "\")");
-    actionBtn.appendChild(document.createTextNode(states[device.state].btnFr));
-    stateDiv.appendChild(stateSpan);
-    stateDiv.appendChild(actionBtn);
+	stateSpan.className = 'state state-' + device.state;
+	if(states[device.state]) {
+		stateSpan.appendChild(document.createTextNode(states[device.state].fr));
+	}
+	stateDiv.appendChild(stateSpan);
+	
+    if (device.state != "DECO" && states[device.state]) {
+        let actionBtn = document.createElement('button');
+        actionBtn.type = 'button';
+        actionBtn.setAttribute("onclick", states[device.state].btn + "\"" + device.id + "\")");
+        actionBtn.appendChild(document.createTextNode(states[device.state].btnFr));
+        stateDiv.appendChild(actionBtn);
+    }
 
     devDiv.appendChild(nameDiv);
     devDiv.appendChild(stateDiv);

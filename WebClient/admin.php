@@ -46,7 +46,7 @@
                 <tr>
                     <td rowspan="3" class="connection" id="connection-cc-rasp2">&lt;---&gt;</td>
                     <th rowspan="3">Rasp 2</th>
-                    <td class="connection" id="connection-rasp2-Ucam">&lt;---&gt;</td>
+                    <td class="connection" id="connection-rasp2-UCAM">&lt;---&gt;</td>
                     <th>Caméra</th>
                 </tr>
                 <tr id="networkEmpty">
@@ -64,7 +64,7 @@
                     <th>Timestamp</th><th>Id du capteur</th><th>Contenu</th><th>Stack</th>
                 </tr>
                 <?php
-                    $stmt = $db->query('SELECT * FROM Log');
+                    $stmt = $db->query('SELECT * FROM Log ORDER BY timestamp DESC LIMIT 200');
                     while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                         echo '<tr>';
                         echo '<td>'.$row['timestamp'].'</td><td>'.$row['deviceId'].'</td><td>'.$row['content'].'</td><td>'.$row['stack'].'</td>';

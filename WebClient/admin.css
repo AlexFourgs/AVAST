@@ -1,10 +1,18 @@
 #main {
-    width: 900px;
+    width: 800px;
 }
 
-@media only screen and (max-width:600px) {
+@media only screen and (max-width:800px) {
     #main {
         margin: auto;
+        width: 90vw;
+    }
+
+    #networkView {
+        width: 90vw;
+    }
+
+    #logView {
         width: 90vw;
     }
 }
