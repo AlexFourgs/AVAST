@@ -1,9 +1,3 @@
-import { AvastRequestAction } from "../CentralComm/Node/avastRequestObject";
-
-// import { AvastRequest } from "./avastRequestObject";
-
-// let avastRq = require("avastRequestObject.js");
-
 // Let us open a web socket
 let ws = new WebSocket("ws://localhost:1337");
 // let ws = new WebSocket("ws://192.168.1.155:8100");
@@ -174,8 +168,10 @@ function resetMenu() {
 
 function changeCam() {
     client.close();
-    let newCamId = document.getElementById("camSelect").value;
-    client.connect(avastRq.devices[newCamId].videoProvider.videoRessouceURI);
+    let camSelect = document.getElementById("camSelect");
+    selectedCamId = camSelect.value;
+    selectedCamIndex = camSelect.selectedIndex;
+    client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
 }
 
 function addToMenu(device) {
@@ -220,13 +216,6 @@ function btnREDY(id) {
     ws.send(json);
 }
 
-function btnShutdown(id) {
-    console.log("REDY "+id);
-    avastRq = rqChangeDevice(id, "DEAC");
-    let json = JSON.stringify(avastRq);
-    ws.send(json);
-}
-
 function rqChangeDevice(id, newState) {
 	let deviceList = new AvastRequest();
 	for (devI in avastRq.devices) {
@@ -240,25 +229,13 @@ function rqChangeDevice(id, newState) {
 	return deviceList;
 }
 
-function btnMoveCam(dir) {
+function btnMoveCam(direction) {
     let deviceList = new AvastRequest();
     
-    switch(dir) {
-        case 'up':
-            console.log("up");
-            deviceList.addAction(new AvastRequestAction("move-up", selectedCamId));
-            break;
-        case 'left':
-            console.log("left");
-            deviceList.addAction(new AvastRequestAction("move-left", selectedCamId));
-            break;
-        case 'right':
-            console.log("right");
-            deviceList.addAction(new AvastRequestAction("move-right", selectedCamId));
-            break;
-        case 'down':
-            console.log("down");
-            deviceList.addAction(new AvastRequestAction("move-down", selectedCamId));
-            break;
-    }
+    console.log("Move "+direction);
+    console.log(avastRq.devices[selectedCamId]);
+    deviceList.addDevice(Object.assign({}, avastRq.devices[selectedCamId]));
+    deviceList.addAction(new AvastRequestAction("move", direction));
+
+    ws.send(JSON.stringify(deviceList));
 }
