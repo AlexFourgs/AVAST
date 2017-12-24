@@ -26,7 +26,7 @@ var client = {
         };
 
         this.socket.onclose = function(msg) {
-            video.src = "";
+            video.src = "404.jpg";
         };
     },
 

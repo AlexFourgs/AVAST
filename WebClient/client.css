@@ -127,6 +127,10 @@ body {
     background-color: #BBB;
 }
 
+#moveContainer table td.move:hover {
+    cursor: pointer;
+}
+
 #moveContainer table td.move:active {
     background-color: #DDD;
 }

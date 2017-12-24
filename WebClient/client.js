@@ -1,3 +1,5 @@
+import { AvastRequestAction } from "../CentralComm/Node/avastRequestObject";
+
 // import { AvastRequest } from "./avastRequestObject";
 
 // let avastRq = require("avastRequestObject.js");
@@ -159,12 +161,14 @@ function resetMenu() {
     }
     if(camCounter == 0) {
         document.getElementById("camContainer").style.visibility = "hidden";
+        // document.getElementById("moveContainer").style.visibility = "hidden";
     }
     else {
         document.getElementById("camContainer").style.visibility = "visible";
         if(avastRq.devices[selectedCamId].videoProvider != null) {
             client.connect(avastRq.devices[selectedCamId].videoProvider.videoRessouceURI);
         }
+        // document.getElementById("moveContainer").style.visibility = "visible";
     }
 }
 
@@ -226,28 +230,35 @@ function btnShutdown(id) {
 function rqChangeDevice(id, newState) {
 	let deviceList = new AvastRequest();
 	for (devI in avastRq.devices) {
-        dev = avastRq.devices[devI];
-        if(dev.id == id) {
-            dev.state = newState;
+        let devClone = Object.assign({}, avastRq.devices[devI]);
+        // dev = avastRq.devices[devI];
+        if(devClone.id == id) {
+            devClone.state = newState;
         }
-		deviceList.addDevice(Object.assign({}, dev));
+		deviceList.addDevice(devClone);
 	}
 	return deviceList;
 }
 
 function btnMoveCam(dir) {
+    let deviceList = new AvastRequest();
+    
     switch(dir) {
         case 'up':
-
+            console.log("up");
+            deviceList.addAction(new AvastRequestAction("move-up", selectedCamId));
             break;
         case 'left':
-
+            console.log("left");
+            deviceList.addAction(new AvastRequestAction("move-left", selectedCamId));
             break;
         case 'right':
-
+            console.log("right");
+            deviceList.addAction(new AvastRequestAction("move-right", selectedCamId));
             break;
         case 'down':
-
+            console.log("down");
+            deviceList.addAction(new AvastRequestAction("move-down", selectedCamId));
             break;
     }
 }

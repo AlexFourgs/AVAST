@@ -69,38 +69,53 @@ ws.on('connection', function (ws) {
 	});
 
 	ws.on('message', function (data) {
-		
+
 		try {
 			let msg = JSON.parse(data);
-			
-			if(msg.actionProvider.length == 0) {
-				CCIP.send(data);
-			}
-			for (action of msg.actionProvider) {
-				switch (action.actionType) {
-					case "listDevices":
-						if(action.actionData == "rq") {
-							let json = JSON.stringify(listDevices());
-							ws.send(json);
-						}
-					break;
-					case "registerCC":
-						CCIP = ws;
-						// console.log(CCIP);
-						rq = msg;
-					break;
-					case "refreshAvast":
-						for(c of clients) {
-							if(c._socket != null) {
-								if(c._socket.remoteAddress != ws._socket.remoteAddress) {
-									c.send(data);
-								}
-							}
-						}
-					break;
+
+			if (msg.actionProvider.length == 0) {
+				if (CCIP != null) {
+					CCIP.send(data);
+				}
+				else {
+					console.log("No CC, couldn't send new device state");
 				}
 			}
-		} catch(e) {
+			for (action of msg.actionProvider) {
+				if (action.actionType.startsWith("move-")) {
+					if (CCIP != null) {
+						CCIP.send(data);
+					}
+					else {
+						console.log("No CC, couldn't send move camera");
+					}
+				}
+				else {
+					switch (action.actionType) {
+						case "listDevices":
+							if (action.actionData == "rq") {
+								let json = JSON.stringify(listDevices());
+								ws.send(json);
+							}
+							break;
+						case "registerCC":
+							CCIP = ws;
+							// console.log(CCIP);
+							rq = msg;
+							break;
+						case "refreshAvast":
+							for (c of clients) {
+								if (c._socket != null) {
+									if (c._socket.remoteAddress != ws._socket.remoteAddress) {
+										c.send(data);
+									}
+								}
+							}
+							break;
+					}
+				}
+			}
+		} catch (e) {
 			console.error(e);
 		}
 	});
